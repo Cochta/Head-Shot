@@ -2,9 +2,8 @@
 
 void Renderer::Setup() {
   ball.Setup("data/ball.png", 5, Offset::Center);
-  goalLeft.Setup("data/porta.png", 5, Offset::DownLeft);
-  goalRight.Setup("data/porta.png", 5, Offset::DownRight);
-
+  goalLeft.Setup("data/portaLeft.png", 5, Offset::DownLeft);
+  goalRight.Setup("data/portaRight.png", 5, Offset::DownRight);
   ground.Setup("data/terreno.png", 5, Offset::DownLeft);
 }
 
@@ -33,7 +32,7 @@ void Renderer::Draw(void) {
 
     const char* text = "Rollback soccer";
 
-    DrawText(text, Metrics::Width * 0.5 - MeasureText(text, font_size) * 0.5,
+    DrawText(text, Metrics::Width * 0.5f - MeasureText(text, font_size) * 0.5f,
              240, 30, WHITE);
   }
   EndDrawing();
