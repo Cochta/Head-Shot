@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.22)
+project(rollback_game)
+
+set(CMAKE_CXX_STANDARD 17)
+
+option(BUILD_WEB "build for web" OFF)
+
+if (BUILD_WEB)
+    add_compile_definitions(PLATFORM_WEB)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif ()
+
+find_package(raylib REQUIRED)
+find_package(fmt REQUIRED)
+
+set(data_dir "${CMAKE_SOURCE_DIR}/data")
+
+set(data_files)
+file(GLOB_RECURSE DATA_FILES
+            "data/*.json"
+            "data/*.png"
+            "data/*.jpg"
+            "data/*.wav"
+            )
+list(APPEND data_files ${DATA_FILES})
+
+# Engine library
+file(GLOB_RECURSE ENGINE_FILES engine/include/*.h engine/src/*.cpp)
+add_library(Engine ${ENGINE_FILES})
+set_target_properties(Engine PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(Engine PUBLIC engine/include/)
+target_include_directories(Engine PUBLIC libs/Math/include/)
+target_link_libraries(Engine PUBLIC fmt::fmt)
+
+# Common library
+file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
+add_library(Common ${COMMON_FILES})
+set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(Common PUBLIC common/include/)
+target_include_directories(Common PUBLIC engine/include/)
+target_include_directories(Common PUBLIC libs/Math/include/)
+
+target_link_libraries(Common PUBLIC raylib Engine)
+
+add_executable(main main.cpp)
+target_link_libraries(main PRIVATE Common)
+
+if (BUILD_WEB)
+        # The local resources path needs to be mapped to /data virtual path
+        string(APPEND data_dir "@data")
+        set_target_properties(main PROPERTIES LINK_FLAGS "--preload-file ${data_dir}")
+endif ()
+
+# Copy all of the resource files to the destination
+file(COPY ${data_files} DESTINATION "data/")
