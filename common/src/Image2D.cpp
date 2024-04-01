@@ -10,7 +10,7 @@ void Image2D::Setup(const char* path, float scale, Offset offset) {
       Origin = {Tex.width * scale * 0.5f, Tex.height * scale * 0.5f};
       break;
     case Offset::TopLeft:
-      Origin = {0,0};
+      Origin = {0, 0};
       break;
     case Offset::TopRight:
       Origin = {Tex.width * scale, 0};
@@ -26,7 +26,7 @@ void Image2D::Setup(const char* path, float scale, Offset offset) {
     default:
       break;
   }
-  
+
   Dest = {0, 0, Source.width * scale, Source.height * scale};
 }
 
