@@ -1,41 +1,36 @@
 #include "Renderer.h"
 
-void Image2D::Setup(const char* path) {
-  Tex = LoadTexture(path);
-  Source = {0, 0, static_cast<float>(Tex.width),
-            static_cast<float>(Tex.height)};
-}
-
-void Image2D::TearDown() { UnloadTexture(Tex); }
-
-void Image2D::Draw(Vector2 position, float scale) {
-  Center = {Tex.width * scale * 0.5f, Tex.height * scale * 0.5f};
-  Dest = {position.x, position.y, Source.width*scale, Source.height*scale};
-  DrawTexturePro(Tex, Source, Dest, Center, 0, WHITE);
-}
-
 void Renderer::Setup() {
-  penguin.Setup("data/penguin.png");
-  InitAudioDevice();
+  ball.Setup("data/ball.png", 5, Offset::Center);
+  goalLeft.Setup("data/porta.png", 5, Offset::DownLeft);
+  goalRight.Setup("data/porta.png", 5, Offset::DownLeft);
+
+  ground.Setup("data/terreno.png", 5, Offset::DownLeft);
 }
 
 void Renderer::TearDown() {
-  penguin.TearDown();
+  ball.TearDown();
+  goalLeft.TearDown();
+  goalRight.TearDown();
+  ground.TearDown();
 
-  CloseAudioDevice();
   CloseWindow();
 }
 
 void Renderer::Draw(void) {
   BeginDrawing();
   {
-    ClearBackground(BLACK);
+    ClearBackground(SKYBLUE);
 
-    DrawLine(screen.width / 2, 0, screen.width / 2, screen.height, RED);
-    DrawLine(0, screen.height / 2, screen.width, screen.height / 2, RED);
-    penguin.Draw({screen.width / 2, screen.height / 2}, 8);
+    ball.Draw({screen.width / 2, screen.height / 2});
 
-    const char* text = "Raylib sample !!!";
+    for (size_t i = 0; i < 8; i++) {
+      ground.Draw({ground.Dest.width * i, screen.height});
+    }
+    goalLeft.Draw({0, screen.height - ground.Dest.height});
+    goalRight.Draw({screen.width, screen.height - ground.Dest.height});
+
+    const char* text = "Rollback soccer";
 
     DrawText(text, Metrics::Width * 0.5 - MeasureText(text, font_size) * 0.5,
              240, 30, WHITE);

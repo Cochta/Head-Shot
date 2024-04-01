@@ -1,20 +1,9 @@
+#pragma once
+
+#include <array>
+
+#include "Image2D.h"
 #include "Metrics.h"
-#include "raylib.h"
-#include "raymath.h"
-
-class Image2D {
- public:
-  Texture2D Tex;
-  Vector2 Pos;
-  Vector2 Center;
-  Rectangle Source;
-
-  Rectangle Dest;
-
-  void Setup(const char* path);
-  void TearDown();
-  void Draw(Vector2 position, float scale);
-};
 
 class Renderer {
  private:
@@ -23,7 +12,10 @@ class Renderer {
   static constexpr Rectangle screen = {0, 0, Metrics::Width, Metrics::Height};
 
  public:
-  Image2D penguin;
+  Image2D ball;
+  Image2D ground;
+  Image2D goalLeft;
+  Image2D goalRight;
 
   void Setup();
 

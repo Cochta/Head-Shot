@@ -32,7 +32,7 @@ namespace Math
         T _radius = 0;
 
     public:
-        [[nodiscard]] constexpr Vec2<T> Center() const noexcept { return _center; }
+        [[nodiscard]] constexpr Vec2<T> Origin() const noexcept { return _center; }
         [[nodiscard]] constexpr T Radius() const noexcept { return _radius; }
 
         void SetCenter(Vec2<T> center) noexcept { _center = center; }
@@ -93,7 +93,7 @@ namespace Math
             return true;
         }
 
-        [[nodiscard]] constexpr Vec2<T> Center() const noexcept
+        [[nodiscard]] constexpr Vec2<T> Origin() const noexcept
         {
             return (_minBound + _maxBound) / 2;
         }
@@ -141,7 +141,7 @@ namespace Math
 
         void SetVertices(std::vector<Vec2<T>> vertices) noexcept { _vertices = vertices; }
 
-        [[nodiscard]] constexpr Vec2<T> Center() const noexcept
+        [[nodiscard]] constexpr Vec2<T> Origin() const noexcept
         {
             Vec2<T> center = Vec2<T>::Zero();
 
@@ -192,7 +192,7 @@ namespace Math
     [[nodiscard]] constexpr bool Intersect(const Circle<T> circle1, const Circle<T> circle2) noexcept
     {
         const T radiusSum = (circle1.Radius() + circle2.Radius()) * (circle1.Radius() + circle2.Radius());
-        const T distanceBetweenCenters = (circle1.Center() - circle2.Center()).SquareLength();
+        const T distanceBetweenCenters = (circle1.Origin() - circle2.Origin()).SquareLength();
 
         return distanceBetweenCenters <= radiusSum;
     }
@@ -209,7 +209,7 @@ namespace Math
     template <typename T>
     [[nodiscard]] constexpr bool Intersect(const Rectangle<T> rectangle, const Circle<T> circle) noexcept
     {
-        const auto center = circle.Center();
+        const auto center = circle.Origin();
 
         if (rectangle.Contains(center)) return true;
 
@@ -337,7 +337,7 @@ namespace Math
     template <typename T>
     [[nodiscard]] constexpr bool Intersect(const Polygon<T> polygon, const Circle<T> circle) noexcept
     {
-        const auto center = circle.Center();
+        const auto center = circle.Origin();
         const auto radius = circle.Radius();
 
         for (const auto &vertex: polygon.Vertices())
