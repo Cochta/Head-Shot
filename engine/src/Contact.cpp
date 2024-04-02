@@ -12,7 +12,7 @@ void Contact::Resolve()
 			const Math::CircleF& circle0 = std::get<Math::CircleF>(CollidingBodies[0].collider->Shape);
 			const Math::CircleF& circle1 = std::get<Math::CircleF>(CollidingBodies[1].collider->Shape);
 
-			const auto delta = CollidingBodies[0].body->Position + circle0.Origin() - CollidingBodies[1].body->Position - circle1.Origin();
+			const auto delta = CollidingBodies[0].body->Position + circle0.origin() - CollidingBodies[1].body->Position - circle1.origin();
 
 			if (delta.Length() > 0.f)
 			{
@@ -32,10 +32,10 @@ void Contact::Resolve()
 			const Math::RectangleF& rectangle = std::get<Math::RectangleF>(CollidingBodies[1].collider->Shape);
 
 			const Math::Vec2F closest(
-				Math::Clamp(CollidingBodies[0].body->Position.X + circle.Origin().X, rectangle.MinBound().X + CollidingBodies[1].body->Position.X, rectangle.MaxBound().X + CollidingBodies[1].body->Position.X),
-				Math::Clamp(CollidingBodies[0].body->Position.Y + circle.Origin().Y, rectangle.MinBound().Y + CollidingBodies[1].body->Position.Y, rectangle.MaxBound().Y + CollidingBodies[1].body->Position.Y));
+				Math::Clamp(CollidingBodies[0].body->Position.X + circle.origin().X, rectangle.MinBound().X + CollidingBodies[1].body->Position.X, rectangle.MaxBound().X + CollidingBodies[1].body->Position.X),
+				Math::Clamp(CollidingBodies[0].body->Position.Y + circle.origin().Y, rectangle.MinBound().Y + CollidingBodies[1].body->Position.Y, rectangle.MaxBound().Y + CollidingBodies[1].body->Position.Y));
 
-			const Math::Vec2F delta = CollidingBodies[0].body->Position + circle.Origin() - closest;
+			const Math::Vec2F delta = CollidingBodies[0].body->Position + circle.origin() - closest;
 
 			const float distance = delta.Length();
 
@@ -68,7 +68,7 @@ void Contact::Resolve()
 			const Math::RectangleF& rect0 = std::get<Math::RectangleF>(CollidingBodies[0].collider->Shape);
 			const Math::RectangleF& rect1 = std::get<Math::RectangleF>(CollidingBodies[1].collider->Shape);
 
-			const Math::Vec2F delta = CollidingBodies[0].body->Position + rect0.Origin() - CollidingBodies[1].body->Position - rect1.Origin();
+			const Math::Vec2F delta = CollidingBodies[0].body->Position + rect0.origin() - CollidingBodies[1].body->Position - rect1.origin();
 
 			const Math::Vec2F penetration(
 				std::get<Math::RectangleF>(CollidingBodies[0].collider->Shape).HalfSize() +

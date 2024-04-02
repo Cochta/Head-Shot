@@ -13,11 +13,11 @@ enum class Offset {
 };
 class Image2D {
  public:
-  Texture2D Tex;
-  Vector2 Pos;
-  Vector2 Origin;
-  Rectangle Source;
-  Rectangle Dest;
+  Texture2D tex;
+  Vector2 pos;
+  Vector2 origin;
+  Rectangle source;
+  Rectangle dest;
 
   void Setup(const char* path, float scale, Offset = Offset::Center);
   void TearDown();

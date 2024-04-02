@@ -1,28 +1,28 @@
 #include "Image2D.h"
 
 void Image2D::Setup(const char* path, float scale, Offset offset) {
-  Tex = LoadTexture(path);
-  Source = {0, 0, static_cast<float>(Tex.width),
-            static_cast<float>(Tex.height)};
+  tex = LoadTexture(path);
+  source = {0, 0, static_cast<float>(tex.width),
+            static_cast<float>(tex.height)};
 
   switch (offset) {
     case Offset::Center:
-      Origin = {Tex.width * scale * 0.5f, Tex.height * scale * 0.5f};
+      origin = {tex.width * scale * 0.5f, tex.height * scale * 0.5f};
       break;
     case Offset::TopLeft:
-      Origin = {0, 0};
+      origin = {0, 0};
       break;
     case Offset::TopRight:
-      Origin = {Tex.width * scale, 0};
+      origin = {tex.width * scale, 0};
       break;
     case Offset::DownLeft:
-      Origin = {0, Tex.height * scale};
+      origin = {0, tex.height * scale};
       break;
     case Offset::DownRight:
-      Origin = {Tex.width * scale, Tex.height * scale};
+      origin = {tex.width * scale, tex.height * scale};
       break;
     case Offset::DownCenter:
-      Origin = {Tex.width * scale * 0.5f, Tex.height * scale};
+      origin = {tex.width * scale * 0.5f, tex.height * scale};
       break;
     case Offset::BackGround:
       break;
@@ -30,13 +30,13 @@ void Image2D::Setup(const char* path, float scale, Offset offset) {
       break;
   }
 
-  Dest = {0, 0, Source.width * scale, Source.height * scale};
+  dest = {0, 0, source.width * scale, source.height * scale};
 }
 
-void Image2D::TearDown() { UnloadTexture(Tex); }
+void Image2D::TearDown() { UnloadTexture(tex); }
 
 void Image2D::Draw(Vector2 position) {
-  Dest.x = position.x;
-  Dest.y = position.y;
-  DrawTexturePro(Tex, Source, Dest, Origin, 0, WHITE);
+  dest.x = position.x;
+  dest.y = position.y;
+  DrawTexturePro(tex, source, dest, origin, 0, WHITE);
 }

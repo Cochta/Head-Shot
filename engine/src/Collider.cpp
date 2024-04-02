@@ -7,7 +7,7 @@ Math::RectangleF Collider::GetBounds() const noexcept
 	case static_cast<int>(Math::ShapeType::Circle):
 	{
 		auto circle = std::get<Math::CircleF>(Shape);
-		return Math::RectangleF::FromCenter(circle.Origin(), { circle.Radius(), circle.Radius() }) + BodyPosition;
+		return Math::RectangleF::FromCenter(circle.origin(), { circle.Radius(), circle.Radius() }) + BodyPosition;
 	}
 	case static_cast<int>(Math::ShapeType::Rectangle):
 	{

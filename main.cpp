@@ -1,4 +1,5 @@
 #include "Audio.h"
+#include "Game.h"
 #include "Renderer.h"
 
 #ifdef PLATFORM_WEB
@@ -23,6 +24,9 @@ int main() {
   Audio audio;
   audio.Setup();
 
+  Game game;
+  game.Setup();
+
   PlaySound(audio.music);
 
 #ifdef PLATFORM_WEB
@@ -33,6 +37,16 @@ int main() {
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
+    if (IsKeyDown(KEY_D)) {
+      game.ProcessInput(Input::Right);
+    }
+    if (IsKeyDown(KEY_A)) {
+      game.ProcessInput(Input::Left);
+    }
+    if (IsKeyPressed(KEY_SPACE)) {
+      game.ProcessInput(Input::Jump);
+    }
+    game.Update();
     renderer.Draw();
   }
 
@@ -40,6 +54,7 @@ int main() {
 
   renderer.TearDown();
   audio.TearDown();
+  game.TearDown();
 
   return EXIT_SUCCESS;
 }
