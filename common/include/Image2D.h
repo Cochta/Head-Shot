@@ -8,6 +8,7 @@ enum class Offset {
   TopRight,
   DownLeft,
   DownRight,
+  DownCenter,
   BackGround
 };
 class Image2D {
@@ -16,7 +17,6 @@ class Image2D {
   Vector2 Pos;
   Vector2 Origin;
   Rectangle Source;
-
   Rectangle Dest;
 
   void Setup(const char* path, float scale, Offset = Offset::Center);

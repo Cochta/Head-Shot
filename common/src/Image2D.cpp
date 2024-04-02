@@ -21,6 +21,9 @@ void Image2D::Setup(const char* path, float scale, Offset offset) {
     case Offset::DownRight:
       Origin = {Tex.width * scale, Tex.height * scale};
       break;
+    case Offset::DownCenter:
+      Origin = {Tex.width * scale * 0.5f, Tex.height * scale};
+      break;
     case Offset::BackGround:
       break;
     default:

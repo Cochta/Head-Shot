@@ -4,7 +4,8 @@ void Renderer::Setup() {
   ball.Setup("data/ball.png", 5, Offset::Center);
   goalLeft.Setup("data/portaLeft.png", 5, Offset::DownLeft);
   goalRight.Setup("data/portaRight.png", 5, Offset::DownRight);
-  ground.Setup("data/terreno.png", 5, Offset::DownLeft);
+  ground.Setup("data/terreno.png", 5, Offset::DownCenter);
+  Metrics::Groundheight = ground.Dest.height;
 }
 
 void Renderer::TearDown() {
@@ -21,13 +22,13 @@ void Renderer::Draw(void) {
   {
     ClearBackground(SKYBLUE);
 
-    ball.Draw({screen.width / 2, screen.height / 2});
+    ball.Draw({Metrics::Width / 2, Metrics::Height / 2});
 
     for (size_t i = 0; i < 8; i++) {
-      ground.Draw({ground.Dest.width * i, screen.height});
+      ground.Draw({ground.Dest.width * i, Metrics::Height});
     }
-    goalLeft.Draw({0, screen.height - ground.Dest.height});
-    goalRight.Draw({screen.width, screen.height - ground.Dest.height});
+    goalLeft.Draw({0, Metrics::Height - Metrics::Groundheight});
+    goalRight.Draw({Metrics::Width, Metrics::Height - Metrics::Groundheight});
     
 
     const char* text = "Rollback soccer";
