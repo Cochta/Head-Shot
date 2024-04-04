@@ -21,5 +21,5 @@ class Image2D {
 
   void Setup(const char* path, float scale, Offset = Offset::Center);
   void TearDown();
-  void Draw(Vector2 position);
+  void Draw(Vector2 position, float rotation = 0);
 };

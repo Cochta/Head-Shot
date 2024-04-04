@@ -20,7 +20,11 @@ class Game : public ContactListener {
   std::vector<ColliderRef> _col_refs;
 
   ColliderRef _ground_col_ref;
+
   ColliderRef _player_blue_col_ref;
+  //BodyRef _player_blue_feet_body_ref;
+  //ColliderRef _player_blue_feet_col_ref;
+
   ColliderRef _player_red_col_ref;
 
   BodyRef _ball_body_ref;
@@ -39,7 +43,8 @@ class Game : public ContactListener {
   static constexpr float kPlayerMass = 5;
 
  public:
-  void ProcessInput(Input input) noexcept;
+  void ProcessInputP1(Input input) noexcept;
+  void ProcessInputP2(Input input) noexcept;
 
   void Setup() noexcept;
   void Update() noexcept;

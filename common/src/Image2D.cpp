@@ -35,8 +35,8 @@ void Image2D::Setup(const char* path, float scale, Offset offset) {
 
 void Image2D::TearDown() { UnloadTexture(tex); }
 
-void Image2D::Draw(Vector2 position) {
+void Image2D::Draw(Vector2 position, float rotation) {
   dest.x = position.x;
   dest.y = position.y;
-  DrawTexturePro(tex, source, dest, origin, 0, WHITE);
+  DrawTexturePro(tex, source, dest, origin, rotation, WHITE);
 }

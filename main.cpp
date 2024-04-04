@@ -15,7 +15,9 @@ void UpdateDrawFrame(void* renderer) {
 }
 
 int main() {
-  InitWindow(Metrics::Width, Metrics::Height, "Raylib sample");
+  InitWindow(Metrics::Width, Metrics::Height, "Head Shot ");
+
+  Metrics::BallType = Metrics::BallType::TENNISBALL;
 
   Renderer renderer;
 
@@ -25,7 +27,6 @@ int main() {
   audio.Setup();
 
   Game game;
-  game.Setup();
 
   PlaySound(audio.music);
 
@@ -37,16 +38,35 @@ int main() {
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
-    if (IsKeyDown(KEY_D)) {
-      game.ProcessInput(Input::Right);
+    switch (Metrics::State) {
+      case Metrics::GameState::MENU:
+        break;
+      case Metrics::GameState::STARTGAME:
+        game.Setup();
+        Metrics::State = Metrics::GameState::INGAME;
+        break;
+      case Metrics::GameState::INGAME:
+        if (IsKeyDown(KEY_D)) {
+          game.ProcessInputP1(Input::Right);
+        }
+        if (IsKeyDown(KEY_A)) {
+          game.ProcessInputP1(Input::Left);
+        }
+        if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W)) {
+          game.ProcessInputP1(Input::Jump);
+        }
+        if (IsKeyDown(KEY_RIGHT)) {
+          game.ProcessInputP2(Input::Right);
+        }
+        if (IsKeyDown(KEY_LEFT)) {
+          game.ProcessInputP2(Input::Left);
+        }
+        if (IsKeyPressed(KEY_UP)) {
+          game.ProcessInputP2(Input::Jump);
+        }
+        game.Update();
+        break;
     }
-    if (IsKeyDown(KEY_A)) {
-      game.ProcessInput(Input::Left);
-    }
-    if (IsKeyPressed(KEY_SPACE)) {
-      game.ProcessInput(Input::Jump);
-    }
-    game.Update();
     renderer.Draw();
   }
 
