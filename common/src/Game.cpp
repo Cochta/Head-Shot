@@ -54,11 +54,12 @@ void Game::Update() noexcept {
         if (col.BodyRef == _ball_body_ref) {
           auto& ballBody = _world.GetBody(col.BodyRef);
           ballBody.ApplyForce({0, kBallGravity});
-          Metrics::BallPos = ballBody.Position;
-          Metrics::BallVelocity = ballBody.Velocity;
+          game_data::BallPos = ballBody.Position;
+          game_data::BallVelocity = ballBody.Velocity;
 
         } else if (col.BodyRef == _player_blue_body_ref) {
           auto& playerBody = _world.GetBody(col.BodyRef);
+
           if (playerBody.Velocity.X > kMaxSpeed) {
             playerBody.Velocity.X = kMaxSpeed;
           } else if (playerBody.Velocity.X < -kMaxSpeed) {
@@ -66,9 +67,10 @@ void Game::Update() noexcept {
           }
 
           playerBody.ApplyForce({0, kPlayerGravity});
-          Metrics::PlayerBluePos = playerBody.Position;
+          game_data::PlayerBluePos = playerBody.Position;
         } else if (col.BodyRef == _player_red_body_ref) {
           auto& playerBody = _world.GetBody(col.BodyRef);
+
           if (playerBody.Velocity.X > kMaxSpeed) {
             playerBody.Velocity.X = kMaxSpeed;
           } else if (playerBody.Velocity.X < -kMaxSpeed) {
@@ -76,7 +78,7 @@ void Game::Update() noexcept {
           }
 
           playerBody.ApplyForce({0, kPlayerGravity});
-          Metrics::PlayerRedPos = playerBody.Position;
+          game_data::PlayerRedPos = playerBody.Position;
         }
         break;
       case static_cast<int>(Math::ShapeType::Rectangle):
@@ -110,34 +112,34 @@ void Game::CreateBall() noexcept {
   _body_refs.push_back(ballBodyRef);
   auto& ballBody = _world.GetBody(ballBodyRef);
 
-  ballBody.Position = Metrics::BallPos;
+  ballBody.Position = game_data::BallPos;
 
   const auto ballColRef = _world.CreateCollider(ballBodyRef);
   _col_refs.push_back(ballColRef);
   auto& ballCol = _world.GetCollider(ballColRef);
-  ballCol.Shape = Math::CircleF(Math::Vec2F::Zero(), Metrics::BallRadius);
+  ballCol.Shape = Math::CircleF(Math::Vec2F::Zero(), metrics::BallRadius);
   ballCol.BodyPosition = ballBody.Position;
 
   _ball_body_ref = ballBodyRef;
 
-  switch (Metrics::BallType) {
-    case Metrics::BallType::FOOTBALL:
+  switch (game_data::Type) {
+    case game_data::BallType::FOOTBALL:
       ballBody.Mass = 1.f;
       ballCol.Restitution = 1.5f;
       break;
-    case Metrics::BallType::VOLLEYBALL:
+    case game_data::BallType::VOLLEYBALL:
       ballBody.Mass = 0.5f;
       ballCol.Restitution = 2.5f;
       break;
-    case Metrics::BallType::BASKETBALL:
+    case game_data::BallType::BASKETBALL:
       ballBody.Mass = 1.f;
       ballCol.Restitution = 1.9f;
       break;
-    case Metrics::BallType::TENNISBALL:
+    case game_data::BallType::TENNISBALL:
       ballBody.Mass = 0.5f;
       ballCol.Restitution = 2.95f;
       break;
-    case Metrics::BallType::BASEBALL:
+    case game_data::BallType::BASEBALL:
       ballBody.Mass = 1.f;
       ballCol.Restitution = 1.f;
       break;
@@ -152,15 +154,15 @@ void Game::CreateTerrain() noexcept {
   groundBody.Type = BodyType::STATIC;
   groundBody.Mass = 1;
 
-  groundBody.Position = {Metrics::Width * 0.5f,
-                         Metrics::Height - Metrics::GroundHeight};
+  groundBody.Position = {metrics::Width * 0.5f,
+                         metrics::Height - metrics::GroundHeight};
 
   const auto groundColRef = _world.CreateCollider(groundRef);
   _col_refs.push_back(groundColRef);
   auto& groundCol = _world.GetCollider(groundColRef);
   groundCol.Shape =
-      Math::RectangleF({-Metrics::Width * 0.5f, 0},
-                       {Metrics::Width * 0.5f, Metrics::GroundHeight});
+      Math::RectangleF({-metrics::Width * 0.5f, 0},
+                       {metrics::Width * 0.5f, metrics::GroundHeight});
   groundCol.BodyPosition = groundBody.Position;
   groundCol.Restitution = 0.f;
   _ground_col_ref = groundColRef;
@@ -172,13 +174,13 @@ void Game::CreateTerrain() noexcept {
   roofBody.Type = BodyType::STATIC;
   roofBody.Mass = 1;
 
-  roofBody.Position = {Metrics::Width * 0.5f, 0};
+  roofBody.Position = {metrics::Width * 0.5f, 0};
 
   const auto roofColRef = _world.CreateCollider(roofRef);
   _col_refs.push_back(roofColRef);
   auto& roofCol = _world.GetCollider(roofColRef);
   roofCol.Shape =
-      Math::RectangleF({-Metrics::Width * 0.5f, 0}, {Metrics::Width * 0.5f, 0});
+      Math::RectangleF({-metrics::Width * 0.5f, 0}, {metrics::Width * 0.5f, 0});
   roofCol.BodyPosition = roofBody.Position;
   roofCol.Restitution = 0.f;
 
@@ -189,13 +191,13 @@ void Game::CreateTerrain() noexcept {
   leftWallBody.Type = BodyType::STATIC;
   leftWallBody.Mass = 1;
 
-  leftWallBody.Position = {0, Metrics::Height * 0.5f};
+  leftWallBody.Position = {0, metrics::Height * 0.5f};
 
   const auto leftWallColRef = _world.CreateCollider(leftWallRef);
   _col_refs.push_back(leftWallColRef);
   auto& leftWallCol = _world.GetCollider(leftWallColRef);
-  leftWallCol.Shape = Math::RectangleF({0, -Metrics::Height * 0.5f},
-                                       {0, Metrics::Height * 0.5f});
+  leftWallCol.Shape = Math::RectangleF({0, -metrics::Height * 0.5f},
+                                       {0, metrics::Height * 0.5f});
   leftWallCol.BodyPosition = leftWallBody.Position;
   leftWallCol.Restitution = 0.f;
 
@@ -206,13 +208,13 @@ void Game::CreateTerrain() noexcept {
   rightWallBody.Type = BodyType::STATIC;
   rightWallBody.Mass = 1;
 
-  rightWallBody.Position = {Metrics::Width, Metrics::Height * 0.5f};
+  rightWallBody.Position = {metrics::Width, metrics::Height * 0.5f};
 
   const auto rightWallColRef = _world.CreateCollider(rightWallRef);
   _col_refs.push_back(rightWallColRef);
   auto& rightWallCol = _world.GetCollider(rightWallColRef);
-  rightWallCol.Shape = Math::RectangleF({0, -Metrics::Height * 0.5f},
-                                        {0, Metrics::Height * 0.5f});
+  rightWallCol.Shape = Math::RectangleF({0, -metrics::Height * 0.5f},
+                                        {0, metrics::Height * 0.5f});
   rightWallCol.BodyPosition = rightWallBody.Position;
   rightWallCol.Restitution = 0.f;
 
@@ -224,12 +226,12 @@ void Game::CreateTerrain() noexcept {
   leftGoalBody.Mass = 1;
 
   leftGoalBody.Position = {
-      0, Metrics::Height - Metrics::GroundHeight - Metrics::GoalSize.Y};
+      0, metrics::Height - metrics::GroundHeight - metrics::GoalSize.Y};
 
   const auto leftGoalColRef = _world.CreateCollider(leftGoalRef);
   _col_refs.push_back(leftGoalColRef);
   auto& leftGoalCol = _world.GetCollider(leftGoalColRef);
-  leftGoalCol.Shape = Math::CircleF(Metrics::GoalSize.X);
+  leftGoalCol.Shape = Math::CircleF(metrics::GoalSize.X);
   leftGoalCol.BodyPosition = leftGoalBody.Position;
   leftGoalCol.Restitution = 0.f;
 
@@ -241,13 +243,13 @@ void Game::CreateTerrain() noexcept {
   rightGoalBody.Mass = 1;
 
   rightGoalBody.Position = {
-      Metrics::Width,
-      Metrics::Height - Metrics::GroundHeight - Metrics::GoalSize.Y};
+      metrics::Width,
+      metrics::Height - metrics::GroundHeight - metrics::GoalSize.Y};
 
   const auto rightGoalColRef = _world.CreateCollider(rightGoalRef);
   _col_refs.push_back(rightGoalColRef);
   auto& rightGoalCol = _world.GetCollider(rightGoalColRef);
-  rightGoalCol.Shape = Math::CircleF(Metrics::GoalSize.X);
+  rightGoalCol.Shape = Math::CircleF(metrics::GoalSize.X);
   rightGoalCol.BodyPosition = rightGoalBody.Position;
   rightGoalCol.Restitution = 0.f;
 }
@@ -260,12 +262,12 @@ void Game::CreatePlayers() noexcept {
 
   p1Body.Mass = 1;
 
-  p1Body.Position = Metrics::PlayerBluePos;
+  p1Body.Position = game_data::PlayerBluePos;
 
   const auto p1ColRef = _world.CreateCollider(p1BodyRef);
   _col_refs.push_back(p1ColRef);
   auto& p1Col = _world.GetCollider(p1ColRef);
-  p1Col.Shape = Math::CircleF(Math::Vec2F::Zero(), Metrics::PlayerRadius);
+  p1Col.Shape = Math::CircleF(Math::Vec2F::Zero(), metrics::PlayerRadius);
   p1Col.BodyPosition = p1Body.Position;
   p1Col.Restitution = 0.f;
   _player_blue_body_ref = p1BodyRef;
@@ -278,15 +280,15 @@ void Game::CreatePlayers() noexcept {
 
   //p1FeetsBody.Mass = 1;
 
-  //p1FeetsBody.Position = {Metrics::PlayerBluePos.X,
-  //                        Metrics::PlayerBluePos.Y + Metrics::FeetHeight};
+  //p1FeetsBody.Position = {metrics::PlayerBluePos.X,
+  //                        metrics::PlayerBluePos.Y + metrics::FeetHeight};
 
   //const auto p1FeetsColRef = _world.CreateCollider(p1FeetsBodyRef);
   //_col_refs.push_back(p1FeetsColRef);
   //auto& p1FeetsCol = _world.GetCollider(p1FeetsColRef);
   //p1FeetsCol.Shape =
-  //    Math::RectangleF({-Metrics::PlayerRadius, 0},
-  //                     {Metrics::PlayerRadius, Metrics::FeetHeight});
+  //    Math::RectangleF({-metrics::PlayerRadius, 0},
+  //                     {metrics::PlayerRadius, metrics::FeetHeight});
   //p1FeetsCol.BodyPosition = p1FeetsBody.Position;
   //p1FeetsCol.Restitution = 0.f;
   //_player_blue_feet_col_ref = p1FeetsBodyRef;
@@ -299,12 +301,12 @@ void Game::CreatePlayers() noexcept {
 
   p2Body.Mass = 1;
 
-  p2Body.Position = Metrics::PlayerRedPos;
+  p2Body.Position = game_data::PlayerRedPos;
 
   const auto p2ColRef = _world.CreateCollider(p2BodyRef);
   _col_refs.push_back(p2ColRef);
   auto& p2Col = _world.GetCollider(p2ColRef);
-  p2Col.Shape = Math::CircleF(Math::Vec2F::Zero(), Metrics::PlayerRadius);
+  p2Col.Shape = Math::CircleF(Math::Vec2F::Zero(), metrics::PlayerRadius);
   p2Col.BodyPosition = p2Body.Position;
   p2Col.Restitution = 0.f;
   _player_red_body_ref = p2BodyRef;

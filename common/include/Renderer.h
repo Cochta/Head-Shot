@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Image2D.h"
-#include "Metrics.h"
+#include "GameData.h"
 #include "Timer.h"
+#include <string>
+#include <fmt/core.h>
 
 class Renderer {
  private:
@@ -33,6 +35,8 @@ class Renderer {
   void SetupPlayers();
 
   void DrawMenu();
+
+  void DrawTimer();
 
   void DrawBall();
   void DrawPlayers();

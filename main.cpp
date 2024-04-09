@@ -15,9 +15,9 @@ void UpdateDrawFrame(void* renderer) {
 }
 
 int main() {
-  InitWindow(Metrics::Width, Metrics::Height, "Head Shot ");
+  InitWindow(metrics::Width, metrics::Height, "Head Shot ");
 
-  Metrics::BallType = Metrics::BallType::TENNISBALL;
+  game_data::Type = game_data::BallType::BASKETBALL;
 
   Renderer renderer;
 
@@ -38,21 +38,32 @@ int main() {
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
-    switch (Metrics::State) {
-      case Metrics::GameState::MENU:
+    switch (game_data::State) {
+      case game_data::GameState::MENU:
         break;
-      case Metrics::GameState::STARTGAME:
+      case game_data::GameState::STARTGAME:
         game.Setup();
-        Metrics::State = Metrics::GameState::INGAME;
+        game_data::State = game_data::GameState::INGAME;
+
+        game_data::GameTimer.SetUp();
         break;
-      case Metrics::GameState::INGAME:
+      case game_data::GameState::INGAME:
+        game_data::GameTimer.Tick();
+        game_data::GameTime += game_data::GameTimer.DeltaTime;
+        game_data::GameFrame++;
+
+        input::Input frameInput = 0;
+
         if (IsKeyDown(KEY_D)) {
+          frameInput |= input::kRight;
           game.ProcessInputP1(Input::Right);
         }
         if (IsKeyDown(KEY_A)) {
+          frameInput |= input::kLeft;
           game.ProcessInputP1(Input::Left);
         }
-        if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_W)) {
+        if (IsKeyDown(KEY_SPACE) || IsKeyPressed(KEY_W)) {
+          frameInput |= input::kJump;
           game.ProcessInputP1(Input::Jump);
         }
         if (IsKeyDown(KEY_RIGHT)) {
@@ -64,6 +75,7 @@ int main() {
         if (IsKeyPressed(KEY_UP)) {
           game.ProcessInputP2(Input::Jump);
         }
+        game_data::GameInputs[game_data::GameFrame] = frameInput;
         game.Update();
         break;
     }

@@ -1,12 +1,14 @@
 #pragma once
+#include "GameData.h"
+
 #include "Metrics.h"
 #include "Timer.h"
 #include "World.h"
 
 enum class Input {
-	Right,
-	Left,
-	Jump
+  Right,
+  Left,
+  Jump
 
 };
 
@@ -22,8 +24,8 @@ class Game : public ContactListener {
   ColliderRef _ground_col_ref;
 
   ColliderRef _player_blue_col_ref;
-  //BodyRef _player_blue_feet_body_ref;
-  //ColliderRef _player_blue_feet_col_ref;
+  // BodyRef _player_blue_feet_body_ref;
+  // ColliderRef _player_blue_feet_col_ref;
 
   ColliderRef _player_red_col_ref;
 
