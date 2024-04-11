@@ -1,41 +1,52 @@
 #pragma once
-#include "GameData.h"
-
+#include "Input.h"
 #include "Metrics.h"
 #include "Timer.h"
 #include "World.h"
 
-enum class Input {
-  Right,
-  Left,
-  Jump
-
+enum class BallType {
+  kFootball = 0,
+  kVolleyball,
+  kBasketball,
+  kTennisball,
+  kBaseball,
+  kCount
 };
 
+enum class GameState { kNone, kInGame };
+
+/**
+ * \brief Handles the physics state of the app
+ */
 class Game : public ContactListener {
- public:
  private:
-  World _world;
-  Timer _timer;
+  World world_;
+  Timer timer_;
 
-  std::vector<BodyRef> _body_refs;
-  std::vector<ColliderRef> _col_refs;
+  GameState state_ = GameState::kNone;
 
-  ColliderRef _ground_col_ref;
+  input::Input input_{};
 
-  ColliderRef _player_blue_col_ref;
+  std::vector<BodyRef> body_refs_;
+  std::vector<ColliderRef> col_refs_;
+
+  ColliderRef ground_col_ref_{};
+
+  ColliderRef player_blue_col_ref_{};
   // BodyRef _player_blue_feet_body_ref;
   // ColliderRef _player_blue_feet_col_ref;
 
-  ColliderRef _player_red_col_ref;
+  ColliderRef player_red_col_ref_{};
 
-  BodyRef _ball_body_ref;
+  BallType ball_type_ = BallType::kFootball;
+  BodyRef ball_body_ref_{};
+  float ball_radius_ = metrics::kBallRadiusMedium;
 
-  BodyRef _player_blue_body_ref;
-  BodyRef _player_red_body_ref;
+  BodyRef player_blue_body_ref_{};
+  BodyRef player_red_body_ref_{};
 
-  bool _is_player_blue_grounded = false;
-  bool _is_player_red_grounded = false;
+  bool is_player_blue_grounded_ = false;
+  bool is_player_red_grounded_ = false;
 
   static constexpr float kBallGravity = 1000;
   static constexpr float kPlayerGravity = 2500;
@@ -45,12 +56,25 @@ class Game : public ContactListener {
   static constexpr float kPlayerMass = 5;
 
  public:
-  void ProcessInputP1(Input input) noexcept;
-  void ProcessInputP2(Input input) noexcept;
+  void ProcessInputP1() noexcept;
+  void ProcessInputP2() noexcept;
 
   void Setup() noexcept;
   void Update() noexcept;
   void TearDown() noexcept;
+
+  void StartGame();
+  GameState GetState();
+
+  void SetInput(input::Input input);
+
+  float GetBallRadius() const noexcept;
+  Math::Vec2F GetBallPosition() noexcept;
+  Math::Vec2F GetBallVelocity() noexcept;
+  BallType GetBallType() noexcept;
+
+  Math::Vec2F GetPlayerBluePos() noexcept;
+  Math::Vec2F GetPlayerRedPos() noexcept;
 
   void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override{};
 

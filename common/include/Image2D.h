@@ -19,7 +19,7 @@ class Image2D {
   Rectangle source;
   Rectangle dest;
 
-  void Setup(const char* path, float scale, Offset = Offset::Center);
+  void Setup(const char* path, Vector2 size, Offset = Offset::Center);
   void TearDown();
   void Draw(Vector2 position, float rotation = 0);
 };

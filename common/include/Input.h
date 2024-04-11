@@ -13,10 +13,4 @@ constexpr Input kLeft = 1 << 1;
 constexpr Input kRight = 1 << 2;
 constexpr Input kKick = 1 << 3;
 
-
-struct FrameInputs {
-  Input inputs = 0;
-  std::uint32_t frame_nbr = 0;
-};
-
 }  // namespace input

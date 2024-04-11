@@ -1,15 +1,24 @@
 #include "Renderer.h"
 
-void Renderer::Setup() {
-  _timer.SetUp();
+void Renderer::StartGame() {
   SetupBall();
-  goal_left.Setup("data/portaLeft.png", 5, Offset::DownLeft);
-  metrics::GoalSize = {goal_left.dest.width, goal_left.dest.height};
-  goal_right.Setup("data/portaRight.png", 5, Offset::DownRight);
-  ground.Setup("data/terreno.png", 5, Offset::DownCenter);
-  metrics::GroundHeight = ground.dest.height;
-
   SetupPlayers();
+}
+
+void Renderer::Setup(Game* game) {
+  SetTargetFPS(metrics::kFPS);
+  game_ = game;
+  rotation_timer_.SetUp();
+  goal_left.Setup("data/portaLeft.png",
+                  {metrics::kGoalSize.X, metrics::kGoalSize.Y},
+                  Offset::DownLeft);
+  goal_right.Setup("data/portaRight.png",
+                   {metrics::kGoalSize.X, metrics::kGoalSize.Y},
+                   Offset::DownRight);
+
+  ground.Setup("data/terreno.png",
+               {metrics::kGroundSize.X, metrics::kGroundSize.Y},
+               Offset::DownCenter);
 }
 
 void Renderer::TearDown() {
@@ -29,16 +38,19 @@ void Renderer::Draw(void) {
     ClearBackground(SKYBLUE);
     DrawFPS(5, 5);
 
-    _timer.Tick();
-    _time += _timer.DeltaTime;
+    rotation_timer_.Tick();
+    rotation_time_ += rotation_timer_.DeltaTime;
 
-    switch (game_data::State) {
-      case game_data::GameState::MENU:
+    switch (state_) {
+      case RenderState::kMenu:
         DrawMenu();
         break;
-      case game_data::GameState::STARTGAME:
+      case RenderState::kStartGame:
+        game_->StartGame();
+        StartGame();
+        state_ = RenderState::kInGame;
         break;
-      case game_data::GameState::INGAME:
+      case RenderState::kInGame:
         DrawBall();
         DrawPlayers();
         DrawTimer();
@@ -52,83 +64,96 @@ void Renderer::Draw(void) {
   EndDrawing();
 }
 
+void Renderer::SetGameTime(float time) { game_time_ = time; }
+
+void Renderer::ChangeState(RenderState newState) noexcept { state_ = newState; }
+
 void Renderer::SetupBall() {
-  switch (game_data::Type) {
-    case game_data::BallType::FOOTBALL:
-      ball.Setup("data/football.png", 0.055f, Offset::Center);
+  const Vector2 ballSize{game_->GetBallRadius() * 2,
+                         game_->GetBallRadius() * 2};
+  switch (game_->GetBallType()) {
+    case BallType::kFootball:
+      ball.Setup("data/football.png", ballSize, Offset::Center);
       break;
-    case game_data::BallType::VOLLEYBALL:
-      ball.Setup("data/volley-ball.png", 0.055f, Offset::Center);
+    case BallType::kVolleyball:
+      ball.Setup("data/volley-ball.png", ballSize, Offset::Center);
       break;
-    case game_data::BallType::BASKETBALL:
-      ball.Setup("data/basket-ball.png", 0.055f, Offset::Center);
+    case BallType::kBasketball:
+      ball.Setup("data/basket-ball.png", ballSize, Offset::Center);
       break;
-    case game_data::BallType::TENNISBALL:
-      ball.Setup("data/tennis-ball.png", 0.055f, Offset::Center);
+    case BallType::kTennisball:
+      ball.Setup("data/tennis-ball.png", ballSize, Offset::Center);
       break;
-    case game_data::BallType::BASEBALL:
-      ball.Setup("data/base-ball.png", 0.055f, Offset::Center);
+    case BallType::kBaseball:
+      ball.Setup("data/base-ball.png", ballSize, Offset::Center);
       break;
   }
-
-  metrics::BallRadius = ball.dest.width * 0.5f;
 }
 
 void Renderer::SetupPlayers() {
   // player blue
-  player_blue.Setup("data/PlayerBlu.png", 5.f, Offset::Center);
+  player_blue.Setup(
+      "data/PlayerBlu.png",
+      {metrics::kPlayerRadius * 2.f, metrics::kPlayerRadius * 2.f},
+      Offset::Center);
 
-  player_blue_left_feet.Setup("data/PlayerBluLeftLeg.png", 5.f,
-                              Offset::DownRight);
-  player_blue_right_feet.Setup("data/PlayerBluRightLeg.png", 5.f,
-                               Offset::DownLeft);
-  metrics::FeetHeight = player_blue_left_feet.dest.height;
-  metrics::PlayerRadius = player_blue.dest.width * 0.5f;
+  // player_blue_left_feet.Setup("data/PlayerBluLeftLeg.png", 5.f,
+  //                             Offset::DownRight);
+  // player_blue_right_feet.Setup("data/PlayerBluRightLeg.png", 5.f,
+  //                              Offset::DownLeft);
+  // metrics::FeetHeight = player_blue_left_feet.dest.height;
 
   // player red
-  player_red.Setup("data/PlayerRed.png", 5.f, Offset::Center);
+  player_red.Setup("data/PlayerRed.png",
+                   {metrics::kPlayerRadius * 2.f, metrics::kPlayerRadius * 2.f},
+                   Offset::Center);
 }
 
 void Renderer::DrawMenu() {
   const char* text = "Start Game";
-  Rectangle startRect = {metrics::Width * 0.333f, metrics::Height * 0.2f,
-                         metrics::Width * 0.333f, metrics::Height * 0.1f};
+  Rectangle startRect = {
+      metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.2f,
+      metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.1f};
   Color color = WHITE;
 
   if (CheckCollisionPointRec(GetMousePosition(), startRect)) {
     color = YELLOW;
     if (IsMouseButtonPressed(0)) {
-      game_data::State = game_data::GameState::STARTGAME;
+      state_ = RenderState::kStartGame;
+      // todo: send to network manager and the network manager starts the game
     }
   }
 
   DrawRectangleRec(startRect, color);
 
-  DrawText(text, metrics::Width * 0.5f - MeasureText(text, kFontSize) * 0.5f,
-           metrics::Height * 0.2f + 30, 30, BLACK);
+  DrawText(text,
+           metrics::kWindowWidth * 0.5f - MeasureText(text, kFontSize) * 0.5f,
+           metrics::kWindowHeight * 0.2f + 30, 30, BLACK);
 }
 
 void Renderer::DrawTimer() {
-  int totalTime = 90 - game_data::GameTime;
+  int totalTime = 90 - game_time_;
   int minutes = totalTime / 60;
   int seconds = totalTime % 60;
 
   std::string formattedTime = fmt::format("{:02d}:{:02d}", minutes, seconds);
-  
+
   int textSize = kFontSize * 2;
 
   DrawText(formattedTime.c_str(),
-           metrics::Width * 0.5f -
+           metrics::kWindowWidth * 0.5f -
                MeasureText(formattedTime.c_str(), textSize) * 0.5f,
-           metrics::Height * 0.2f + 30, textSize, BLACK);
+           metrics::kWindowHeight * 0.2f + 30, textSize, BLACK);
 }
 
 void Renderer::DrawBall() {
-  float distanceMovedThisFrame = _timer.DeltaTime * game_data::BallVelocity.X;
+  const float distanceMovedThisFrame =
+      rotation_timer_.DeltaTime * game_->GetBallVelocity().X;
 
-  float rotationRadiansThisFrame = distanceMovedThisFrame / metrics::BallRadius;
+  const float rotationRadiansThisFrame =
+      distanceMovedThisFrame / game_->GetBallRadius();
 
-  float rotationDegreesThisFrame =
+  const float rotationDegreesThisFrame =
       rotationRadiansThisFrame * (180.0f / Math::Pi);
 
   ballCurrentRotation += rotationDegreesThisFrame;
@@ -137,49 +162,64 @@ void Renderer::DrawBall() {
   if (ballCurrentRotation < 0) {
     ballCurrentRotation += 360.0f;  // Correct negative rotation
   }
-
-  ball.Draw({game_data::BallPos.X, game_data::BallPos.Y}, ballCurrentRotation);
+  const auto ballPos = game_->GetBallPosition();
+  ball.Draw({ballPos.X, ballPos.Y}, ballCurrentRotation);
 }
 
 void Renderer::DrawPlayers() {
-  player_blue.Draw({game_data::PlayerBluePos.X, game_data::PlayerBluePos.Y});
-  player_blue_left_feet.Draw(
-      {game_data::PlayerBluePos.X,
-       game_data::PlayerBluePos.Y + metrics::PlayerRadius});
-  player_blue_right_feet.Draw(
-      {game_data::PlayerBluePos.X,
-       game_data::PlayerBluePos.Y + metrics::PlayerRadius});
-  player_red.Draw({game_data::PlayerRedPos.X, game_data::PlayerRedPos.Y});
+  const auto playerBluePos = game_->GetPlayerBluePos();
+  const auto playerRedPos = game_->GetPlayerRedPos();
+
+  player_blue.Draw({playerBluePos.X, playerBluePos.Y});
+
+  player_red.Draw({playerRedPos.X, playerRedPos.Y});
+
+  // player_blue_left_feet.Draw(
+  //     {game_data::PlayerBluePos.X,
+  //      game_data::PlayerBluePos.Y + metrics::kPlayerRadius});
+
+  // player_blue_right_feet.Draw(
+  //     {game_data::PlayerBluePos.X,
+  //      game_data::PlayerBluePos.Y + metrics::kPlayerRadius});
 }
 
 void Renderer::DrawTerrain() {
   for (size_t i = 0; i < 8; i++) {
-    ground.Draw({ground.dest.width * i, metrics::Height});
+    ground.Draw({ground.dest.width * i, metrics::kWindowHeight});
   }
 
-  goal_left.Draw({0, metrics::Height - metrics::GroundHeight});
-  goal_right.Draw({metrics::Width, metrics::Height - metrics::GroundHeight});
+  goal_left.Draw({0, metrics::kWindowHeight - metrics::kGroundSize.Y});
+  goal_right.Draw(
+      {metrics::kWindowWidth, metrics::kWindowHeight - metrics::kGroundSize.Y});
 }
 
 void Renderer::DrawHitbox() {
-  DrawCircle(game_data::BallPos.X, game_data::BallPos.Y, metrics::BallRadius,
+  const auto ballPos = game_->GetBallPosition();
+  DrawCircle(ballPos.X, ballPos.Y, game_->GetBallRadius(),
              WHITE);  // ball
 
-  DrawRectangle(0, metrics::Height - metrics::GroundHeight, metrics::Width,
-                metrics::GroundHeight, GREEN);  // ground
+  DrawRectangle(0, metrics::kWindowHeight - metrics::kGroundSize.Y,
+                metrics::kWindowWidth, metrics::kGroundSize.Y,
+                GREEN);  // ground
 
-  DrawCircle(game_data::PlayerBluePos.X, game_data::PlayerBluePos.Y,
-             metrics::PlayerRadius,
+  const auto playerBluePos = game_->GetPlayerBluePos();
+  const auto playerRedPos = game_->GetPlayerRedPos();
+
+  DrawCircle(playerBluePos.X, playerBluePos.Y,
+             metrics::kPlayerRadius,
              BLUE);  // player blue
 
-  DrawCircle(game_data::PlayerRedPos.X, game_data::PlayerRedPos.Y,
-             metrics::PlayerRadius,
+  DrawCircle(playerRedPos.X, playerRedPos.Y,
+             metrics::kPlayerRadius,
              RED);  // player red
 
-  DrawCircle(0, metrics::Height - metrics::GroundHeight - metrics::GoalSize.Y,
-             metrics::GoalSize.X, WHITE);  // goal left
+  DrawRectangle(
+      0, metrics::kWindowHeight - metrics::kGroundSize.Y - metrics::kGoalSize.Y,
+      metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f, WHITE);  // goal left
 
-  DrawCircle(metrics::Width,
-             metrics::Height - metrics::GroundHeight - metrics::GoalSize.Y,
-             metrics::GoalSize.X, WHITE);  // goal left
+  DrawRectangle(
+      metrics::kWindowWidth - metrics::kGoalSize.X,
+      metrics::kWindowHeight - metrics::kGroundSize.Y - metrics::kGoalSize.Y,
+      metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f,
+      WHITE);  // goal right
 }

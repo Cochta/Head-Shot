@@ -15,14 +15,17 @@ constexpr float MeterRatio = 100.f;
   return meters * MeterRatio;
 }
 
-constexpr int Width = MetersToPixels(12);
-constexpr int Height = MetersToPixels(8);
+constexpr int kFPS = 60;
 
-inline float GroundHeight = 0.f;
-inline Math::Vec2F GoalSize = {0.f, 0.f};
-inline float BallRadius = 1.f;
-inline float PlayerRadius = 1.f;
+constexpr int kWindowWidth = MetersToPixels(12);
+constexpr int kWindowHeight = MetersToPixels(8);
 
-inline float FeetHeight = 0.f;
+constexpr float kBallRadiusSmall = MetersToPixels(0.2f);
+constexpr float kBallRadiusMedium = MetersToPixels(0.3f);
+constexpr float kBallRadiusLarge = MetersToPixels(0.4f);
+
+constexpr Math::Vec2F kGroundSize{kWindowWidth / 7.f, kWindowHeight / 5.f};
+constexpr Math::Vec2F kGoalSize = {MetersToPixels(0.6f), kWindowHeight / 3.f};
+constexpr float kPlayerRadius = MetersToPixels(0.5f);
 
 }  // namespace metrics

@@ -5,11 +5,20 @@ set(CMAKE_CXX_STANDARD 17)
 
 option(BUILD_WEB "build for web" OFF)
 
+option(USE_TRACY "Use Tracy Profiler" OFF)
+
 if (BUILD_WEB)
     add_compile_definitions(PLATFORM_WEB)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
+    set(USE_TRACY OFF)
 endif ()
+
+if (USE_TRACY)
+    add_compile_definitions(TRACY_ENABLE)
+    include_directories(libs/TracyProfiler/tracy)
+    add_library(tracyClient STATIC libs/TracyProfiler/TracyClient.cpp)
+endif()
 
 find_package(raylib REQUIRED)
 find_package(fmt REQUIRED)
@@ -33,6 +42,11 @@ target_include_directories(Engine PUBLIC engine/include/)
 target_include_directories(Engine PUBLIC libs/Math/include/)
 target_link_libraries(Engine PUBLIC fmt::fmt)
 
+if (USE_TRACY)
+    target_compile_definitions(Engine PUBLIC TRACY_ENABLE)
+    target_link_libraries(Engine PRIVATE tracyClient)
+endif()
+
 # Common library
 file(GLOB_RECURSE COMMON_FILES common/include/*.h common/src/*.cpp)
 add_library(Common ${COMMON_FILES})
@@ -40,11 +54,20 @@ set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Common PUBLIC common/include/)
 target_include_directories(Common PUBLIC engine/include/)
 target_include_directories(Common PUBLIC libs/Math/include/)
-
 target_link_libraries(Common PUBLIC raylib Engine)
+
+if (USE_TRACY)
+    target_compile_definitions(Common PUBLIC TRACY_ENABLE)
+    target_link_libraries(Common PRIVATE tracyClient)
+endif()
 
 add_executable(main main.cpp)
 target_link_libraries(main PRIVATE Common)
+
+if (USE_TRACY)
+    target_compile_definitions(main PUBLIC TRACY_ENABLE)
+    target_link_libraries(main PRIVATE tracyClient)
+endif()
 
 if (BUILD_WEB)
         # The local resources path needs to be mapped to /data virtual path

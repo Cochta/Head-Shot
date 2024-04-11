@@ -1,36 +1,35 @@
 #include "Image2D.h"
 
-void Image2D::Setup(const char* path, float scale, Offset offset) {
+void Image2D::Setup(const char* path, Vector2 size, Offset offset) {
   tex = LoadTexture(path);
   source = {0, 0, static_cast<float>(tex.width),
             static_cast<float>(tex.height)};
+  dest = {0, 0, size.x, size.y};
 
   switch (offset) {
     case Offset::Center:
-      origin = {tex.width * scale * 0.5f, tex.height * scale * 0.5f};
+      origin = {dest.width * 0.5f, dest.height * 0.5f};
       break;
     case Offset::TopLeft:
       origin = {0, 0};
       break;
     case Offset::TopRight:
-      origin = {tex.width * scale, 0};
+      origin = {dest.width, 0};
       break;
     case Offset::DownLeft:
-      origin = {0, tex.height * scale};
+      origin = {0, dest.height};
       break;
     case Offset::DownRight:
-      origin = {tex.width * scale, tex.height * scale};
+      origin = {dest.width, dest.height};
       break;
     case Offset::DownCenter:
-      origin = {tex.width * scale * 0.5f, tex.height * scale};
+      origin = {dest.width * 0.5f, dest.height};
       break;
     case Offset::BackGround:
       break;
     default:
       break;
   }
-
-  dest = {0, 0, source.width * scale, source.height * scale};
 }
 
 void Image2D::TearDown() { UnloadTexture(tex); }

@@ -279,6 +279,7 @@ namespace Math
 
             if (divisor == 0)
             {
+                return Radian(0);
                 throw DivisionByZeroException();
             }
 
@@ -316,19 +317,22 @@ namespace Math
         template<typename U = T>
         [[nodiscard]] NOALIAS constexpr static Vec2<U> Slerp(const Vec2<T> vec1, const Vec2<T> vec2, float t)
         {
+            
             auto vec1u = static_cast<Vec2<U>>(vec1);
             auto vec2u = static_cast<Vec2<U>>(vec2);
+            
             Radian angleBetween = vec1u.Angle(vec2u);
-
+            
             float sinAngle = Sin(angleBetween);
             float sinAngleT = Sin(angleBetween * t);
             float sinAngle1T = Sin(angleBetween * (1 - t));
 
-            if (sinAngle == 0)
+            if (std::abs(sinAngle) < std::numeric_limits<float>::epsilon())
             {
+                return Vec2::Zero();
                 throw DivisionByZeroException();
             }
-
+            
             float tOnAngle = sinAngleT / sinAngle;
             float oneMinusTOnAngle = sinAngle1T / sinAngle;
 
