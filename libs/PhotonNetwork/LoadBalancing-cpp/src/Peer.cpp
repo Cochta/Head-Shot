@@ -45,15 +45,15 @@ namespace ExitGames
 
 #if defined EG_DOC
 		/**
-		   Initiates the disconnection from the %Photon server. The servers response will arrive in PhotonListener::onStatusChanged().
+		   Initiates the disconnection from the %Photon server. The servers response will arrive in PhotonNetwork::onStatusChanged().
 		   @details
-		   This function generates a disconnection request that will be sent to the %Photon server. If the disconnection is completed successfully, then the PhotonListener::onStatusChanged() callback will
+		   This function generates a disconnection request that will be sent to the %Photon server. If the disconnection is completed successfully, then the PhotonNetwork::onStatusChanged() callback will
 		   be called, with a statusCode of StatusCode::DISCONNECT.
 
 		   @remarks
 		   If a game room is joined, when this function gets called, then the local player leaves that room as if opLeaveRoom() has been called with parameter 'willComeBack' set to 'true'.
 		   Please see there for further information about leaving rooms.
-		   However no call to Listener::leaveRoomReturn() will happen when leaving a game room is triggered through a call to disconnect().
+		   However no call to Network::leaveRoomReturn() will happen when leaving a game room is triggered through a call to disconnect().
 		   @sa
 		   connect() */
 		void Peer::disconnect(void)

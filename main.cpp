@@ -34,6 +34,9 @@ int main() {
 
   // pres pk les var glob sont code smell
 
+  Network network("e20aab1f-1122-4e28-8d64-cc14ec075841","1.0");
+  network.Connect();
+
   Game game;
 
   Renderer renderer;
@@ -49,6 +52,7 @@ int main() {
 #else
 
   while (!WindowShouldClose()) {
+    network.Service();
     switch (game.GetState()) {
       case GameState::kNone:
         break;

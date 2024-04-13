@@ -15,8 +15,8 @@ namespace ExitGames
 		using namespace Common;
 
 		/** @class LobbyStatsResponse
-		   Passed to Listener::onLobbyStatsResponse(), Listener::onLobbyStatsUpdate(). Each instance of this class holds the name, the type and the statistics (peer count and room count) of one specific lobby. Each lobby can be uniquely identified by the combination of its name and type.
-		   @sa Client::opLobbyStats(), Listener::onLobbyStatsResponse(), Listener::onLobbyStatsUpdate(), LobbyStatsRequest */
+		   Passed to Network::onLobbyStatsResponse(), Network::onLobbyStatsUpdate(). Each instance of this class holds the name, the type and the statistics (peer count and room count) of one specific lobby. Each lobby can be uniquely identified by the combination of its name and type.
+		   @sa Client::opLobbyStats(), Network::onLobbyStatsResponse(), Network::onLobbyStatsUpdate(), LobbyStatsRequest */
 
 		LobbyStatsResponse::LobbyStatsResponse(const JString& name, nByte type, int peerCount, int roomCount)
 			: mName(name)

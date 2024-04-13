@@ -27,7 +27,7 @@ namespace ExitGames
 		   values to Photon which will verify them before granting access or disconnecting the client.
 
 		   If you don't set a user ID through setUserID() for the AuthenticationValues instance that you pass to Client::connect() and you neither set one in your auth service (or don't use an auth service), then Photon generates a unique user ID (which fulfills the
-		   requirements of a GUID) for you, which (as well as a userId that is set by your auth service) can be retrieved through Client::getUserID(), once the Client instance has notified Listener::connectReturn() about having successfully finished the connection procedure.
+		   requirements of a GUID) for you, which (as well as a userId that is set by your auth service) can be retrieved through Client::getUserID(), once the Client instance has notified Network::connectReturn() about having successfully finished the connection procedure.
 		   Once you have set a user ID, the Client instance caches it until you either override it or until the end of the lifetime of the Client instance.
 		   @note
 		   If both, the client and the auth service, set a userID, then the one that is set by the auth service, takes priority.

@@ -7,6 +7,8 @@ option(BUILD_WEB "build for web" OFF)
 
 option(USE_TRACY "Use Tracy Profiler" OFF)
 
+option(BUILD_RELEASE "build in release" ON)
+
 if (BUILD_WEB)
     add_compile_definitions(PLATFORM_WEB)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy")
@@ -30,7 +32,7 @@ set_target_properties(Photon PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Photon PUBLIC libs/PhotonNetwork)
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
+if(BUILD_RELEASE)
     target_link_libraries(Photon PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Common-cpp/Common-cpp_vc17_release_windows_md_x64.lib
         ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Photon-cpp/Photon-cpp_vc17_release_windows_md_x64.lib
@@ -75,7 +77,7 @@ target_link_libraries(Engine PUBLIC)
 
 if (USE_TRACY)
     target_compile_definitions(Engine PUBLIC TRACY_ENABLE)
-    target_link_libraries(Engine PRIVATE tracyClient)
+    target_link_libraries(Engine PRIVATE tracyClient fmt::fmt)
 endif()
 
 # Common library

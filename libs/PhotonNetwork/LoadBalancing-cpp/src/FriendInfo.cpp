@@ -16,7 +16,7 @@ namespace ExitGames
 		
 		/** @class FriendInfo
 		   Used to store the information about a friend's online status and in which room he/she is active.
-		   @sa Client::getFriendList(), Client::getFriendListAge(), Client::opFindFriends(), Listener::onFindFriendsResponse() */
+		   @sa Client::getFriendList(), Client::getFriendListAge(), Client::opFindFriends(), Network::onFindFriendsResponse() */
 
 		FriendInfo::FriendInfo(const JString& userID, bool isOnline, const JString& room)
 			: mUserID(userID)

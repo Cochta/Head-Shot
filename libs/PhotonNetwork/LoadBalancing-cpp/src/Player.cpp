@@ -157,10 +157,10 @@ namespace ExitGames
 		   When the current master client leaves the room or becomes inactive and there is at least one active player inside the room, then the role of master client gets reassigned by the server to an active client. As soon as one client becomes active again
 		   in a room with only inactive clients, the role of master client will be assigned to this active client.
 
-		   Whenever the role of master client gets assigned to a different client, all active clients inside the same room get informed about it by a call to Listener::onMasterClientChanged().
+		   Whenever the role of master client gets assigned to a different client, all active clients inside the same room get informed about it by a call to Network::onMasterClientChanged().
 
 		   You can use the master client when you want one client to be an authoritative instance.
-		   @sa MutableRoom::getMasterClientID(), Listener::onMasterClientChanged(), DirectMode::MASTER_TO_ALL */
+		   @sa MutableRoom::getMasterClientID(), Network::onMasterClientChanged(), DirectMode::MASTER_TO_ALL */
 		bool Player::getIsMasterClient(void) const
 		{
 			return mpRoom?mNumber==mpRoom->getMasterClientID():false;

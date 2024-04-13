@@ -16,7 +16,7 @@ namespace ExitGames
 
 		/** @class LobbyStatsRequest
 		   Passed to Client::opLobbyStats(). Each instance of this class holds the name and the type of a lobby for which the caller of Client::opLobbyStats() wants to request statistics.
-		   @sa Client::opLobbyStats(), Listener::onLobbyStatsResponse(), Listener::onLobbyStatsUpdate(), LobbyStatsResponse */
+		   @sa Client::opLobbyStats(), Network::onLobbyStatsResponse(), Network::onLobbyStatsUpdate(), LobbyStatsResponse */
 		
 		/**
 		   Constructor: Creates a new instance with the specified parameters.

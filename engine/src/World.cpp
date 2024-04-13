@@ -1,7 +1,7 @@
 #include "World.h"
-#include <fmt/format.h>
 
 #ifdef TRACY_ENABLE
+#include <fmt/format.h>
 #include <Tracy.hpp>
 #include <TracyC.h>
 #endif 

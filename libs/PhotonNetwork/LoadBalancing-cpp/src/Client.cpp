@@ -472,10 +472,10 @@ namespace ExitGames
 		   @return the latest locally cached state of the friend list.
 		   @remarks
 		   You can request the latest state of the local clients friend list from the server by a call to opFindFriends().
-		   Listener::onFindFriendsResponse() informs you when the servers response has arrived.
+		   Network::onFindFriendsResponse() informs you when the servers response has arrived.
 		   The list that is returned by this function reflects the state that the server has sent in its latest response to an update request or in other words the most up to date state that is
 		   available locally at the time of the call.
-		   @sa opFindFriends(), Listener::onFindFriendsResponse(), FriendInfo, getFriendListAge() */
+		   @sa opFindFriends(), Network::onFindFriendsResponse(), FriendInfo, getFriendListAge() */
 		const JVector<FriendInfo>& Client::getFriendList(void) const
 		{
 			return mFriendList;
@@ -513,7 +513,7 @@ namespace ExitGames
 		   @return the region code of the Photon Cloud region to which the client has the best ping.
 		   @remarks
 		   When you specify RegionSelectionMode::BEST on constructing the Client instance, then on first connect the Client will aquire a list of available regions and of their adresses and ping
-		   each of them multiple times. Afterwards it will connect to the region with the lowest average ping. After you got a call to Listener::connectReturn(), the region code of the region that
+		   each of them multiple times. Afterwards it will connect to the region with the lowest average ping. After you got a call to Network::connectReturn(), the region code of the region that
 		   the Client has chosen based on the ping results can get accessed by a call to this function. Later calls to connect() will use that cached region code to avoid re-doing the
 		   time-consuming ping-procedure and to therefor keep the time short that is needed for establishing a connection. For the same reason it is recommended that you acquire the result of the
 		   ping-procedure through this function and store it in local persistant storage, so that you can use it with RegionSelectionMode::SELECT. This way you can avoid the time-consuming pinging
@@ -523,7 +523,7 @@ namespace ExitGames
 		   construction of a Client instance.
 		   @note
 		   This function will return an empty string, if no ping result is available (yet), which is the case when another RegionSelectionMode than BEST has been chosen or when you have not
-		   received the call to Listener::connectReturn() yet that corresponds to your first successfully established connection since the construction of this class.*/
+		   received the call to Network::connectReturn() yet that corresponds to your first successfully established connection since the construction of this class.*/
 		const JString& Client::getRegionWithBestPing(void) const
 		{
 			return mRegionWithBestPing;
@@ -610,14 +610,14 @@ namespace ExitGames
 		}
 
 		/**
-		   This function starts establishing a connection to a %Photon server. The servers response will arrive in Listener::connectReturn().
+		   This function starts establishing a connection to a %Photon server. The servers response will arrive in Network::connectReturn().
 		   @details
 		   The connection is successfully established when the %Photon client received a valid response from the server. The connect-attempt fails when a network error occurs or when server is not
 		   responding.
-		   A call to this function starts an asynchronous operation. The result of this operation gets returned through the Listener::connectReturn() callback function.
-		   If this function returns false, then the connect-attempt has already failed locally. If it returns true, then either Listener::connectionErrorReturn() or Listener::connectReturn() will
+		   A call to this function starts an asynchronous operation. The result of this operation gets returned through the Network::connectReturn() callback function.
+		   If this function returns false, then the connect-attempt has already failed locally. If it returns true, then either Network::connectionErrorReturn() or Network::connectReturn() will
 		   get called.
-		   The operation was successful, when Listener::connectReturn() got called with errorCode==0.
+		   The operation was successful, when Network::connectReturn() got called with errorCode==0.
 		   @param connectOptions An instance of class ConnectOptions
 		   @returns
 		   true, if it could successfully start establishing a connection (the result will be provided in a callback function in this case) or false, if an error occurred and the connection could
@@ -661,14 +661,14 @@ namespace ExitGames
 		}
 		
 		/**
-		   This function generates a disconnection request that will be sent to the %Photon server. The servers response will arrive in Listener::disconnectReturn().
+		   This function generates a disconnection request that will be sent to the %Photon server. The servers response will arrive in Network::disconnectReturn().
 		   @details
-		   If the disconnection is completed successfully, then the Listener::disconnectReturn() callback will be called.
+		   If the disconnection is completed successfully, then the Network::disconnectReturn() callback will be called.
 
 		   @remarks
 		   If a game room is joined, when this function gets called, then the local player leaves that room as if opLeaveRoom() has been called with parameter 'willComeBack' set to 'true'.
 		   Please see there for further information about leaving rooms.
-		   However no call to Listener::leaveRoomReturn() will happen when leaving a game room is triggered through a call to disconnect().
+		   However no call to Network::leaveRoomReturn() will happen when leaving a game room is triggered through a call to disconnect().
 		   @sa
 		   connect(), opLeaveRoom() */
 		void Client::disconnect(void)
@@ -740,7 +740,7 @@ namespace ExitGames
 		}
 
 		/** @fn template<typename Ftype> bool Client::opRaiseEvent(bool reliable, const Ftype& parameters, nByte eventCode, const RaiseEventOptions& options)
-		   Sends in-game data to other players in the game, who will receive it in their Listener::customEventAction() callback.
+		   Sends in-game data to other players in the game, who will receive it in their Network::customEventAction() callback.
 		   @details
 		   The eventCode should be used to define the event's type and content respectively. The payload has to be one of the datatypes
 		   that are listed as supported for values at @link Datatypes serializable datatypes\endlink.
@@ -760,7 +760,7 @@ namespace ExitGames
 
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   Listener::customEventAction(), @link Datatypes Table of Datatypes\endlink
+		   Network::customEventAction(), @link Datatypes Table of Datatypes\endlink
 		   @param reliable true = the operation will be sent reliably; false = no resend in case of packet loss - will be ignored, when not using ConnectionProtocol::UDP
 		   @param parameters the payload of the event to raise - has to be provided in the form of one of the supported data types, specified at @link Datatypes Table of Datatypes\endlink
 		   @param eventCode number for arbitrary classification of the type of the event (like '1' for position updates, '2' for chat messages, and so on).
@@ -788,7 +788,7 @@ namespace ExitGames
 		/**
 		   Joins the specified lobby.
 		   @details
-		   This function sends a request to the server to join the specified lobby. If it returns true, then Listener::joinLobbyReturn() gets called when the operation has successfully been
+		   This function sends a request to the server to join the specified lobby. If it returns true, then Network::joinLobbyReturn() gets called when the operation has successfully been
 		   finished.
 		   Please see <a href="https://doc.photonengine.com/en/realtime/current/reference/matchmaking-and-lobby">Matchmaking Guide</a> regarding the differences between the various lobby types.
 		   @remarks
@@ -805,7 +805,7 @@ namespace ExitGames
 		   @param lobbyType one of the values in LobbyType
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opLeaveLobby(), setAutoJoinLobby(), getAutoJoinLobby(), Listener::joinLobbyReturn() */
+		   opLeaveLobby(), setAutoJoinLobby(), getAutoJoinLobby(), Network::joinLobbyReturn() */
 		bool Client::opJoinLobby(const JString& lobbyName, nByte lobbyType)
 		{
 			if(getIsInRoom())
@@ -822,13 +822,13 @@ namespace ExitGames
 		/**
 		   Leaves the currently joined lobby.
 		   @details
-		   This function sends a request to the server to leave the currently joined lobby. If it returns true, then Listener::leaveLobbyReturn() gets called when the operation has successfully
+		   This function sends a request to the server to leave the currently joined lobby. If it returns true, then Network::leaveLobbyReturn() gets called when the operation has successfully
 		   been finished.
 		   @remarks
 		   This operation will fail and return false if the client does not currently reside inside any lobby.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opJoinLobby(), Listener::leaveLobbyReturn() */
+		   opJoinLobby(), Network::leaveLobbyReturn() */
 		bool Client::opLeaveLobby(void)
 		{
 			if(!getIsInLobby())
@@ -843,7 +843,7 @@ namespace ExitGames
 		/**
 		   Creates and enters a new game room.
 		   @details
-		   This function sends a request to the server to create the specified game room. If it returns true, then Listener::createRoomReturn() gets called when the operation has been finished.
+		   This function sends a request to the server to create the specified game room. If it returns true, then Network::createRoomReturn() gets called when the operation has been finished.
 
 		   If you don't want to create a unique room name, pass L"" as name and the server will assign a roomName (a GUID as string). %Room names are unique.
 
@@ -855,13 +855,13 @@ namespace ExitGames
 		   A Client instance can only be inside one room at a time. Therefor this operation will fail and return false, if the client is already inside another game room. Any lobby the client
 		   currently resides in will implicitly be left when entering a game room.
 		   @remarks
-		   If a room with the specified name does already exist, then the operation will fail and Listener::createRoomReturn() will get called with an error code.
+		   If a room with the specified name does already exist, then the operation will fail and Network::createRoomReturn() will get called with an error code.
 		   @param gameID The name to create a room with. Must be unique and not in use or the room can't be created. If this is an empty string, then the server will assign a GUID as name.
 		   @param options An instance of RoomOptions, that can be used to specify various options for room creation.
 		   @param expectedUsers Sets a list of user IDs for which the server should reserve slots. Those slots can't be taken by other players.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, RoomOptions, Listener::createRoomReturn() */
+		   opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, RoomOptions, Network::createRoomReturn() */
 		bool Client::opCreateRoom(const JString& gameID, const RoomOptions& options, const JVector<JString>& expectedUsers)
 		{
 			if(getIsInGameRoom())
@@ -910,7 +910,7 @@ namespace ExitGames
 		/**
 		   Joins the specified game room or creates and enters a new game room with the specified ID if such a room does not exist yet.
 		   @details
-		   This function sends a request to the server to join the specified game room if exists and to create it otherwise. If it returns true, then Listener::joinOrCreateRoomReturn() gets
+		   This function sends a request to the server to join the specified game room if exists and to create it otherwise. If it returns true, then Network::joinOrCreateRoomReturn() gets
 		   called when the operation has been finished.
 
 		   Unlike opJoinRoom(), this operation does not fail if the room does not exist.
@@ -925,7 +925,7 @@ namespace ExitGames
 		   A Client instance can only be inside one room at a time. Therefor this operation will fail and return false, if the client is already inside another game room. Any lobby the client
 		   currently resides in will implicitly be left when entering a game room.
 		   @remarks
-		   If the room is full or closed, then this operation will fail and Listener::joinOrCreateRoomReturn() will get called with an error code.
+		   If the room is full or closed, then this operation will fail and Network::joinOrCreateRoomReturn() will get called with an error code.
 		   @param gameID A unique identifier for the game room to join or create. If this is an empty string, then the server will create a room and assign a GUID as name.
 		   @param options An instance of RoomOptions, that can be used to specify various options for room creation. These options will be ignored when the room already exists.
 		   @param cacheSliceIndex Allows to request a specific cache slice - all events in that cache slice and upward slices will be published to the client after joining the room - see
@@ -934,7 +934,7 @@ namespace ExitGames
 		   be merged with any previously set list of expected users for this room.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, RoomOptions, Listener::joinOrCreateRoomReturn() */
+		   opCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, RoomOptions, Network::joinOrCreateRoomReturn() */
 		bool Client::opJoinOrCreateRoom(const JString& gameID, const RoomOptions& options, int cacheSliceIndex, const JVector<JString>& expectedUsers)
 		{
 			if(getIsInGameRoom())
@@ -984,7 +984,7 @@ namespace ExitGames
 		/**
 		   Joins a random game room that matches the specified criteria or creates and enters a new game room with the specified ID if such a room does not exist yet.
 		   @details
-		   This function sends a request to the server to join a random game room that matches the specified filters if such a room exists and to create it otherwise. If it returns true, then Listener::joinRandomOrCreateRoomReturn() gets called
+		   This function sends a request to the server to join a random game room that matches the specified filters if such a room exists and to create it otherwise. If it returns true, then Network::joinRandomOrCreateRoomReturn() gets called
 		   when the operation has been finished.
 
 		   Unlike opJoinRandomRoom(), this operation does not fail if no room exists, that matches the specified criteria, but creates a new room.
@@ -1013,7 +1013,7 @@ namespace ExitGames
 		   list of expected users for this room.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, Listener::joinRandomOrCreateRoomReturn(),
+		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, Network::joinRandomOrCreateRoomReturn(),
 		   <a href="https://doc.photonengine.com/en-us/realtime/current/reference/matchmaking-and-lobby">Matchmaking and Lobby</a> */
 		bool Client::opJoinRandomOrCreateRoom(const JString& gameID, const RoomOptions& options, const Hashtable& customRoomProperties, nByte maxPlayers, nByte matchmakingMode, const JString& lobbyName, nByte lobbyType, const JString& sqlLobbyFilter, const JVector<JString>& expectedUsers)
 		{
@@ -1063,7 +1063,7 @@ namespace ExitGames
 		/**
 		   Joins the specified game room.
 		   @details
-		   This function sends a request to the server to join the specified game room. If it returns true, then Listener::joinRoomReturn() gets called when the operation has been finished.
+		   This function sends a request to the server to join the specified game room. If it returns true, then Network::joinRoomReturn() gets called when the operation has been finished.
 
 		   This function is useful when you are using a lobby to list rooms and know their names.
 		   A room's name has to be unique (per region and app version), so it does not matter which lobby the room is in.
@@ -1074,7 +1074,7 @@ namespace ExitGames
 		   A Client instance can only be inside one room at a time. Therefor this operation will fail and return false, if the client is already inside another game room. Any lobby the client
 		   currently resides in will implicitly be left when entering a game room.
 		   @remarks
-		   If a room with the specified name does not exist or if the room is full or closed, then this operation will fail and Listener::joinRoomReturn() will get called with an error code.
+		   If a room with the specified name does not exist or if the room is full or closed, then this operation will fail and Network::joinRoomReturn() will get called with an error code.
 		   @param gameID A unique identifier for the game room to join.
 		   @param rejoin Needs to be false if this is the initial join of this room for this client and true if this is a rejoin.
 		   @param cacheSliceIndex Allows to request a specific cache slice - all events in that cache slice and upward slices will be published to the client after joining the room - see
@@ -1083,7 +1083,7 @@ namespace ExitGames
 		   list of expected users for this room.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, Listener::joinRoomReturn() */
+		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRandomRoom(), opLeaveRoom(), MutableRoom, Network::joinRoomReturn() */
 		bool Client::opJoinRoom(const JString& gameID, bool rejoin, int cacheSliceIndex, const JVector<JString>& expectedUsers)
 		{
 			if(getIsInGameRoom())
@@ -1121,12 +1121,12 @@ namespace ExitGames
 		/**
 		   Joins a random game room.
 		   @details
-		   This function sends a request to the server to join a random game room. If it returns true, then Listener::joinRandomRoomReturn() gets called when the operation has been finished.
+		   This function sends a request to the server to join a random game room. If it returns true, then Network::joinRandomRoomReturn() gets called when the operation has been finished.
 		   @remarks
 		   A Client instance can only be inside one room at a time. Therefor this operation will fail and return false, if the client is already inside another game room. Any lobby the client
 		   currently resides in will implicitly be left when entering a game room.
 		   @remarks
-		   If no rooms are fitting or available (all full, closed or not visible), then this operation will fail and Listener::joinRandomRoomReturn() will get get called with an error code.
+		   If no rooms are fitting or available (all full, closed or not visible), then this operation will fail and Network::joinRandomRoomReturn() will get get called with an error code.
 		   @param customRoomProperties Used as a filter for matchmaking. The server only considers rooms for which all custom properties match the specified filters. Note that only those custom
 		   room properties that have been specified for listing in the lobby will be used for matchmaking, so a rooms custom property can only match a specified filter if it got specified in the list
 		   of properties to show in the lobby. All values must be exact matches.
@@ -1141,7 +1141,7 @@ namespace ExitGames
 		   list of expected users for this room.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opLeaveRoom(), MutableRoom, Listener::joinRandomRoomReturn(),
+		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRandomOrCreateRoom(), opJoinRoom(), opLeaveRoom(), MutableRoom, Network::joinRandomRoomReturn(),
 		   <a href="https://doc.photonengine.com/en-us/realtime/current/reference/matchmaking-and-lobby">Matchmaking and Lobby</a> */
 		bool Client::opJoinRandomRoom(const Hashtable& customRoomProperties, nByte maxPlayers, nByte matchmakingMode, const JString& lobbyName, nByte lobbyType, const JString& sqlLobbyFilter, const JVector<JString>& expectedUsers)
 		{
@@ -1170,7 +1170,7 @@ namespace ExitGames
 		/**
 		   Leaves the currently joined game room.
 		   @details
-		   This function sends a request to the server to leave the currently joined game room. If it returns true, then Listener::leaveRoomReturn() gets called when the operation has successfully
+		   This function sends a request to the server to leave the currently joined game room. If it returns true, then Network::leaveRoomReturn() gets called when the operation has successfully
 		   been finished.
 		   @remarks
 		   This operation will fail and return false if the client does not currently reside inside any game room.
@@ -1181,7 +1181,7 @@ namespace ExitGames
 		   The default is 'false'.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), MutableRoom, RoomOptions, Listener::leaveRoomReturn() */
+		   opCreateRoom(), opJoinOrCreateRoom(), opJoinRoom(), opJoinRandomRoom(), MutableRoom, RoomOptions, Network::leaveRoomReturn() */
 		bool Client::opLeaveRoom(bool willComeBack, bool sendAuthCookie)
 		{
 			if(!getIsInGameRoom())
@@ -1198,10 +1198,10 @@ namespace ExitGames
 
 		/**
 		   Requests the rooms and online states for the specified list of friends. All clients should set a unique UserID before connecting. The result can be accessed through getFriendList()
-		   after the corresponding call to Listener::onFindFriendsResponse() has been received.
+		   after the corresponding call to Network::onFindFriendsResponse() has been received.
 		   @details
 		   This function can be called when the caller does not currently reside in a game room to find the rooms played by a selected list of users.
-		   The result can be accessed by a call to getFriendList() and is empty before the first response has arrived in Listener::onFindFriendsResponse().
+		   The result can be accessed by a call to getFriendList() and is empty before the first response has arrived in Network::onFindFriendsResponse().
 		   getFriendListAge() can be used to retrieve the amount of milliseconds that have passed since the value that is returned by getFriendList() has been updated for the last time.
 
 		   Users identify themselves by passing their UserIDs to AuthenticationValues::setUserID().
@@ -1213,7 +1213,7 @@ namespace ExitGames
 		   @param numFriendsToFind The element count of friendsToFind.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   getFriendList(), getFriendListAge(), Listener::onFindFriendsResponse() */
+		   getFriendList(), getFriendListAge(), Network::onFindFriendsResponse() */
 		bool Client::opFindFriends(const JString* friendsToFind, short numFriendsToFind)
 		{
 			if(getIsOnGameServer() || mIsFetchingFriendList)
@@ -1225,21 +1225,21 @@ namespace ExitGames
 		}
 		
 		/**
-		   Sends the specified list of LobbyStatsRequest objects to the server. The corresponding list of LobbyStatsResponse objects arrives in Listener::onLobbyStatsResponse().
+		   Sends the specified list of LobbyStatsRequest objects to the server. The corresponding list of LobbyStatsResponse objects arrives in Network::onLobbyStatsResponse().
 		   @details
 		   This function can be called when the caller does not currently reside in a game room to retrieve statistics for various lobbies.
 
 		   @remarks
 		   This operation will fail and return false if the client does currently reside inside a game room.
 		   @note
-		   Pass 'true' for the 'autoLobbyStats' parameter of Client() to automatically receive regular stats updates for all lobbies in Listener::onLobbyStatsUpdate(). When doing so, it
+		   Pass 'true' for the 'autoLobbyStats' parameter of Client() to automatically receive regular stats updates for all lobbies in Network::onLobbyStatsUpdate(). When doing so, it
 		   makes little sense to also additionally call this function. opLobbyStats() should rather be used in combination with passing 'false' for the 'autoLobbyStats' parameter of
 		   Client() to achieve fine-grain control of when / how often and for which lobbies you want to retrieve a stats update. This can be useful to reduce traffic when you have lots of
 		   lobbies, but only rarely need stats updates for most of them.
 		   @param lobbiesToQuery A Common::JVector containing a LobbyStatsRequest instance for each lobby that should be queried.
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   Client(), Listener::onLobbyStatsResponse(), Listener::onLobbyStatsUpdate(), LobbyStatsRequest, LobbyStatsResponse */
+		   Client(), Network::onLobbyStatsResponse(), Network::onLobbyStatsUpdate(), LobbyStatsRequest, LobbyStatsResponse */
 		bool Client::opLobbyStats(const Common::JVector<LoadBalancing::LobbyStatsRequest>& lobbiesToQuery)
 		{
 			if(getIsOnGameServer())
@@ -1280,24 +1280,24 @@ namespace ExitGames
 		}
 		
 		/**
-		   Used in conjunction with Listener::onCustomAuthenticationIntermediateStep() to implement multi-leg custom authentication.
+		   Used in conjunction with Network::onCustomAuthenticationIntermediateStep() to implement multi-leg custom authentication.
 		   @details
 		   While normally custom authentication is single-legged, occasionally a certain service may require multi-leg authentication. This means that the client sends some authentication data
 		   to the server that you pass when calling connect() and the server does not respond with a final result (successful connect or failed connect attempt due to an authentication error),
-		   but with some intermediate result data that gets passed to your Listener::onCustomAuthenticationIntermediateStep() implementation and that is needed by your application to acquire the
+		   but with some intermediate result data that gets passed to your Network::onCustomAuthenticationIntermediateStep() implementation and that is needed by your application to acquire the
 		   authentication data for the next step of the authentication process. You can then pass that next step data to this function to continue the authentication process that you have started
 		   with the connect() call.
 
 		   @remarks
 		   This operation will fail and return false if the client is not currently expecting it to be called. A call by you is only expected after you have received a call to
-		   Listener::onCustomAuthenticationIntermediateStep() beforehand and only one call to this function is expected after each received call to
-		   Listener::onCustomAuthenticationIntermediateStep(). If a call is expected, then the connection flow pauses until this call has been made.
+		   Network::onCustomAuthenticationIntermediateStep() beforehand and only one call to this function is expected after each received call to
+		   Network::onCustomAuthenticationIntermediateStep(). If a call is expected, then the connection flow pauses until this call has been made.
 		   No call to this function is ever expected if the custom authentication that you have set up is single-legged (which is by far more common) or if you have not set up any custom
 		   authentication at all, which means that this function will always fail in these scenarios.
 		   @param authenticationValues An instance of class AuthenticationValues
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   connect(), Listener::onCustomAuthenticationIntermediateStep(), AuthenticationValues */
+		   connect(), Network::onCustomAuthenticationIntermediateStep(), AuthenticationValues */
 		bool Client::opCustomAuthenticationSendNextStepData(const AuthenticationValues& authenticationValues)
 		{
 			if(mState != PeerStates::WaitingForCustomAuthenticationNextStepCall)
@@ -1312,7 +1312,7 @@ namespace ExitGames
 		   @details
 		   A WebRPC calls a custom, http-based function on a server that you provide. The uriPath is relative to a "base path"
 		   which is configured on the server side. The sent parameters get converted to Json. Vice versa, the response
-		   of the web-service will be converted back, when it gets sent back to the Client, where it arrives in Listener::webRpcReturn().
+		   of the web-service will be converted back, when it gets sent back to the Client, where it arrives in Network::webRpcReturn().
 
 
 		   To use this feature, you have to setup your server:
@@ -1321,7 +1321,7 @@ namespace ExitGames
 
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   Listener::webRpcReturn(), @link Datatypes Table of Datatypes\endlink, <a href="https://doc.photonengine.com/en-us/realtime/current/reference/webhooks">Webhooks</a>
+		   Network::webRpcReturn(), @link Datatypes Table of Datatypes\endlink, <a href="https://doc.photonengine.com/en-us/realtime/current/reference/webhooks">Webhooks</a>
 		   @param uriPath the URL path to call, relative to the baseUrl configured on Photon's server-side
 		 */
 		bool Client::opWebRpc(const JString& uriPath)
@@ -1378,11 +1378,11 @@ namespace ExitGames
 #	pragma GCC diagnostic ignored "-Wcomment"
 #endif
 		/**
-		   Used in conjunction with Listener::onAvailableRegions() and RegionSelectionMode::SELECT to select a certain server region to connect to.
+		   Used in conjunction with Network::onAvailableRegions() and RegionSelectionMode::SELECT to select a certain server region to connect to.
 		   @details
 		   If you pass RegionSelectionMode::SELECT for parameter 'regionSelectionMode' to Client(), then the Client does not automatically choose a server region to connect to on its own during
 		   the connection flow, but upon retrieving the list of available regions and the list of server addresses that can be used to ping those regions it passes those lists to your
-		   implementation of Listener::onAvailableRegions() and pauses the connection flow. You then need to choose one of the available regions and select it by passing its name to this function
+		   implementation of Network::onAvailableRegions() and pauses the connection flow. You then need to choose one of the available regions and select it by passing its name to this function
 		   to continue the connection flow.
 
 		   The list of available regions for Photon Public Cloud is available at <a href="https://doc.photonengine.com/en-us/realtime/current/reference/regions">Regions</a>.
@@ -1406,14 +1406,14 @@ namespace ExitGames
 		   <li> "eu/&lowast;" - Only valid when at least 2 clusters are set up in region 'eu' of which at least one is available. The server randomly selects one of the available clusters in the specified
 		   region. This string is not contained in the list of available regions and must be constructed by your code when it is valid and when you intend to select a random cluster.
 		   </ul>
-		   In case of the server randomly selecting a cluster, parameter 'cluster' of Listener::connectReturn() contains the name of the cluster to which the client has connected. Otherwise that
+		   In case of the server randomly selecting a cluster, parameter 'cluster' of Network::connectReturn() contains the name of the cluster to which the client has connected. Otherwise that
 		   parameter is an empty string.
 		   @remarks
 		   This operation will fail and return false if 'regionSelectionMode' has not been set to RegionSelectionMode::SELECT upon construction of this class instance.
-		   @param selectedRegion Must be a valid region name that matches one of the entries in the list of available regions that got passed to Listener::onAvailableRegions()
+		   @param selectedRegion Must be a valid region name that matches one of the entries in the list of available regions that got passed to Network::onAvailableRegions()
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   Client(), connect(), Listener::onAvailableRegions() */
+		   Client(), connect(), Network::onAvailableRegions() */
 #if !defined _EG_MS_COMPILER
 #	pragma GCC diagnostic pop
 #endif
@@ -1435,10 +1435,10 @@ namespace ExitGames
 		   Reconnects to the server and rejoins the last previously joined room.
 		   @details
 		   This function reconnects directly to the game server to which it has previously been connected to and sends a request to the server to join the last previously joined game room. If it
-		   returns true, then Listener::joinRoomReturn() gets called when the operation has been finished.
+		   returns true, then Network::joinRoomReturn() gets called when the operation has been finished.
 
 		   The usual requirements for a rejoin apply, meaning the room must still exist, the local player must have entered it before, but it must not have left it for good, but only have
-		   become inactive and the playerTTL for the local player in that room must not have run out yet, otherwise this operation will fail and Listener::joinRoomReturn() will get called with an
+		   become inactive and the playerTTL for the local player in that room must not have run out yet, otherwise this operation will fail and Network::joinRoomReturn() will get called with an
 		   error code.
 		   @remarks
 		   This function will fail and return false if no game room has been entered since the creation of the class instance or if the client is still/already in a connected state.
@@ -1446,7 +1446,7 @@ namespace ExitGames
 		   reconnectAndRejoin() is quicker than the combination of connect() and opJoinRoom().
 		   @returns true, if the request could successfully be queued for sending to the server, false otherwise.
 		   @sa
-		   connect(), opJoinRoom(), Listener::joinRoomReturn()  */
+		   connect(), opJoinRoom(), Network::joinRoomReturn()  */
 		bool Client::reconnectAndRejoin(void)
 		{
 			if(!mGameserver.length())
@@ -1464,7 +1464,7 @@ namespace ExitGames
 		}
 
 		/** @fn template<typename Ftype> bool Client::sendDirect(const Ftype& parameters, int targetPlayer, bool fallbackRelay)
-		   Sends in-game data to other players in the game, who will receive it in their Listener::onDirectMessage() callback. Data that gets sent with this function, gets sent over a direct peer to peer connection, when possible.
+		   Sends in-game data to other players in the game, who will receive it in their Network::onDirectMessage() callback. Data that gets sent with this function, gets sent over a direct peer to peer connection, when possible.
 		   @details
 		   For the %Photon clients to attempt to establish direct peer to peer connections to each other when entering a room you need set the the DirectMode Option to a mode other than DirectMode::NONE on the RoomOptions instance that you provide on room creation.
 		   Only when a direct connection to a certain client exists, data can be exchanged with it directly. Otherwise this function either falls back to sending it through the %Photon game server with opRaiseEvent(), or doesn't send it at all, depending on the value of the
@@ -1483,7 +1483,7 @@ namespace ExitGames
 		   This function provides a rather low-level raw UDP socket like way to send data.
 		   If you need any higher level functionality like reliable data delivery, support for bigger messages, message caching, interest groups or webforwarding, then please use opRaiseEvent() instead.
 		   @sa
-		   Listener::onDirectMessage(), opRaiseEvent(), DirectMode, RoomOptions::getDirectMode(), RoomOptions::setDirectMode()
+		   Network::onDirectMessage(), opRaiseEvent(), DirectMode, RoomOptions::getDirectMode(), RoomOptions::setDirectMode()
 		   @param parameters the data to send - has to be provided in the form of one of the supported data types, specified at @link Datatypes Table of Datatypes\endlink - must be less than 1200 bytes
 		   @param options see SendDirectOptions
 		   @returns the number of target players, for which the request could successfully be sent (this does not guarantee that it will be received).
