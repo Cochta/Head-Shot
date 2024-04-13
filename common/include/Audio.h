@@ -1,6 +1,8 @@
 #pragma once
 
-#include "raylib.h"
+#include "raylib_wrapper.h"
+
+using namespace raylib;
 
 class Audio {
  public:

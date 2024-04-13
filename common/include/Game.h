@@ -55,12 +55,14 @@ class Game : public ContactListener {
   static constexpr float kJumpSpeed = -50000;
   static constexpr float kPlayerMass = 5;
 
+  static constexpr float kFixedDeltaTime = 1.f / metrics::kFPS;
+
  public:
   void ProcessInputP1() noexcept;
   void ProcessInputP2() noexcept;
 
   void Setup() noexcept;
-  void Update() noexcept;
+  void Update(float deltaTime) noexcept;
   void TearDown() noexcept;
 
   void StartGame();

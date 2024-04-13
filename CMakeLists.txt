@@ -23,6 +23,25 @@ endif()
 find_package(raylib REQUIRED)
 find_package(fmt REQUIRED)
 
+# Create the photon library.
+file(GLOB_RECURSE PHOTON_SRC_FILES libs/PhotonNetwork/LoadBalancing-cpp/inc/*.h libs/PhotonNetwork/LoadBalancing-cpp/src/*.cpp)
+add_library(Photon ${PHOTON_SRC_FILES})
+set_target_properties(Photon PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(Photon PUBLIC libs/PhotonNetwork)
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+    target_link_libraries(Photon PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Common-cpp/Common-cpp_vc17_release_windows_md_x64.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Photon-cpp/Photon-cpp_vc17_release_windows_md_x64.lib
+    )
+else()
+    target_link_libraries(Photon PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Common-cpp/Common-cpp_vc17_debug_windows_md_x64.lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/libs/PhotonNetwork/Photon-cpp/Photon-cpp_vc17_debug_windows_md_x64.lib
+    )
+endif()
+
 set(data_dir "${CMAKE_SOURCE_DIR}/data")
 
 set(data_files)
@@ -34,13 +53,25 @@ file(GLOB_RECURSE DATA_FILES
             )
 list(APPEND data_files ${DATA_FILES})
 
+# Network library
+file(GLOB_RECURSE NETWORK_FILES network/include/*.h network/src/*.cpp)
+add_library(Network ${NETWORK_FILES})
+set_target_properties(Network PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(Network PUBLIC Network/include/)
+target_link_libraries(Network PUBLIC Photon)
+
+if (USE_TRACY)
+    target_compile_definitions(Network PUBLIC TRACY_ENABLE)
+    target_link_libraries(Network PRIVATE tracyClient)
+endif()
+
 # Engine library
 file(GLOB_RECURSE ENGINE_FILES engine/include/*.h engine/src/*.cpp)
 add_library(Engine ${ENGINE_FILES})
 set_target_properties(Engine PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Engine PUBLIC engine/include/)
 target_include_directories(Engine PUBLIC libs/Math/include/)
-target_link_libraries(Engine PUBLIC fmt::fmt)
+target_link_libraries(Engine PUBLIC)
 
 if (USE_TRACY)
     target_compile_definitions(Engine PUBLIC TRACY_ENABLE)
@@ -54,7 +85,7 @@ set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Common PUBLIC common/include/)
 target_include_directories(Common PUBLIC engine/include/)
 target_include_directories(Common PUBLIC libs/Math/include/)
-target_link_libraries(Common PUBLIC raylib Engine)
+target_link_libraries(Common PUBLIC raylib Engine Network fmt::fmt)
 
 if (USE_TRACY)
     target_compile_definitions(Common PUBLIC TRACY_ENABLE)

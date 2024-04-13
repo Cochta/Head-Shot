@@ -6,7 +6,6 @@ void Renderer::StartGame() {
 }
 
 void Renderer::Setup(Game* game) {
-  SetTargetFPS(metrics::kFPS);
   game_ = game;
   rotation_timer_.SetUp();
   goal_left.Setup("data/portaLeft.png",
@@ -126,9 +125,9 @@ void Renderer::DrawMenu() {
 
   DrawRectangleRec(startRect, color);
 
-  DrawText(text,
-           metrics::kWindowWidth * 0.5f - MeasureText(text, kFontSize) * 0.5f,
-           metrics::kWindowHeight * 0.2f + 30, 30, BLACK);
+  DrawRaylibText(
+      text, metrics::kWindowWidth * 0.5f - MeasureText(text, kFontSize) * 0.5f,
+      metrics::kWindowHeight * 0.2f + 30, 30, BLACK);
 }
 
 void Renderer::DrawTimer() {
@@ -140,10 +139,10 @@ void Renderer::DrawTimer() {
 
   int textSize = kFontSize * 2;
 
-  DrawText(formattedTime.c_str(),
-           metrics::kWindowWidth * 0.5f -
-               MeasureText(formattedTime.c_str(), textSize) * 0.5f,
-           metrics::kWindowHeight * 0.2f + 30, textSize, BLACK);
+  DrawRaylibText(formattedTime.c_str(),
+                 metrics::kWindowWidth * 0.5f -
+                     MeasureText(formattedTime.c_str(), textSize) * 0.5f,
+                 metrics::kWindowHeight * 0.2f + 30, textSize, BLACK);
 }
 
 void Renderer::DrawBall() {
@@ -205,12 +204,10 @@ void Renderer::DrawHitbox() {
   const auto playerBluePos = game_->GetPlayerBluePos();
   const auto playerRedPos = game_->GetPlayerRedPos();
 
-  DrawCircle(playerBluePos.X, playerBluePos.Y,
-             metrics::kPlayerRadius,
+  DrawCircle(playerBluePos.X, playerBluePos.Y, metrics::kPlayerRadius,
              BLUE);  // player blue
 
-  DrawCircle(playerRedPos.X, playerRedPos.Y,
-             metrics::kPlayerRadius,
+  DrawCircle(playerRedPos.X, playerRedPos.Y, metrics::kPlayerRadius,
              RED);  // player red
 
   DrawRectangle(

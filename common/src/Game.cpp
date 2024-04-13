@@ -30,71 +30,76 @@ void Game::Setup() noexcept {
   CreatePlayers();
 }
 
-void Game::Update() noexcept {
+void Game::Update(float deltaTime) noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
+  static float time = kFixedDeltaTime;
+  time += deltaTime;
 
-  switch (state_) {
-    case GameState::kNone:
-      break;
-    case GameState::kInGame:
-      ProcessInputP1();
-      for (std::size_t i = 0; i < col_refs_.size(); ++i) {
-        const auto& col = world_.GetCollider(col_refs_[i]);
+  while (time >= kFixedDeltaTime) {
+    switch (state_) {
+      case GameState::kNone:
+        break;
+      case GameState::kInGame:
+        ProcessInputP1();
+        for (std::size_t i = 0; i < col_refs_.size(); ++i) {
+          const auto& col = world_.GetCollider(col_refs_[i]);
 
-        const auto& shape = world_.GetCollider(col_refs_[i]).Shape;
+          const auto& shape = world_.GetCollider(col_refs_[i]).Shape;
 
-        switch (shape.index()) {
-          case static_cast<int>(Math::ShapeType::Circle):
-            if (col.BodyRef == ball_body_ref_) {
-              auto& ballBody = world_.GetBody(col.BodyRef);
-              ballBody.ApplyForce({0, kBallGravity});
+          switch (shape.index()) {
+            case static_cast<int>(Math::ShapeType::Circle):
+              if (col.BodyRef == ball_body_ref_) {
+                auto& ballBody = world_.GetBody(col.BodyRef);
+                ballBody.ApplyForce({0, kBallGravity});
 
-            } else if (col.BodyRef == player_blue_body_ref_) {
-              auto& playerBody = world_.GetBody(col.BodyRef);
+              } else if (col.BodyRef == player_blue_body_ref_) {
+                auto& playerBody = world_.GetBody(col.BodyRef);
 
-              if (playerBody.Velocity.X > kMaxSpeed) {
-                playerBody.Velocity.X = kMaxSpeed;
-              } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                playerBody.Velocity.X = -kMaxSpeed;
+                if (playerBody.Velocity.X > kMaxSpeed) {
+                  playerBody.Velocity.X = kMaxSpeed;
+                } else if (playerBody.Velocity.X < -kMaxSpeed) {
+                  playerBody.Velocity.X = -kMaxSpeed;
+                }
+                playerBody.ApplyForce({0, kPlayerGravity});
+                // simulate friction with fground
+
+                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                    is_player_blue_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                }
+              } else if (col.BodyRef == player_red_body_ref_) {
+                auto& playerBody = world_.GetBody(col.BodyRef);
+
+                if (playerBody.Velocity.X > kMaxSpeed) {
+                  playerBody.Velocity.X = kMaxSpeed;
+                } else if (playerBody.Velocity.X < -kMaxSpeed) {
+                  playerBody.Velocity.X = -kMaxSpeed;
+                }
+                playerBody.ApplyForce({0, kPlayerGravity});
+
+                // simulate friction with ground
+                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                    is_player_red_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                }
               }
-              playerBody.ApplyForce({0, kPlayerGravity});
-              // simulate friction with fground
-
-              if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                  is_player_blue_grounded_) {
-                playerBody.Velocity =
-                    playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-              }
-            } else if (col.BodyRef == player_red_body_ref_) {
-              auto& playerBody = world_.GetBody(col.BodyRef);
-
-              if (playerBody.Velocity.X > kMaxSpeed) {
-                playerBody.Velocity.X = kMaxSpeed;
-              } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                playerBody.Velocity.X = -kMaxSpeed;
-              }
-              playerBody.ApplyForce({0, kPlayerGravity});
-
-              // simulate friction with ground
-              if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                  is_player_red_grounded_) {
-                playerBody.Velocity =
-                    playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-              }
-            }
-            break;
-          case static_cast<int>(Math::ShapeType::Rectangle):
-            break;
-          default:
-            break;
+              break;
+            case static_cast<int>(Math::ShapeType::Rectangle):
+              break;
+            default:
+              break;
+          }
         }
-      }
-      timer_.Tick();
-      world_.Update(1.f / metrics::kFPS);
-      break;
-    default:;
+        timer_.Tick();
+        world_.Update(kFixedDeltaTime);
+        break;
+      default:;
+    }
+    time -= kFixedDeltaTime;
   }
 }
 
@@ -146,9 +151,10 @@ void Game::OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept {
 }
 
 void Game::CreateBall() noexcept {
-  ball_type_ = static_cast<BallType>(
-      GetRandomValue(0, static_cast<int>(BallType::kCount) - 1));
-  printf("\n\n%i\n\n", static_cast<int>(ball_type_));
+  ball_type_ =
+      BallType::kBasketball;  // static_cast<BallType>( GetRandomValue(0,
+                              // static_cast<int>(BallType::kCount) - 1));
+
   const auto ballBodyRef = world_.CreateBody();
   body_refs_.push_back(ballBodyRef);
   auto& ballBody = world_.GetBody(ballBodyRef);

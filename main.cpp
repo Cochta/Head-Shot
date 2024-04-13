@@ -1,6 +1,7 @@
 #include "Audio.h"
 #include "Game.h"
 #include "Renderer.h"
+#include "network.h"
 
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
@@ -9,7 +10,6 @@
 
 #ifdef TRACY_ENABLE
 #include <TracyC.h>
-
 #include <Tracy.hpp>
 #endif
 
@@ -21,13 +21,14 @@ void UpdateDrawFrame(void* renderer) {
 }
 
 int main() {
+  SetConfigFlags(FLAG_VSYNC_HINT);
   InitWindow(metrics::kWindowWidth, metrics::kWindowHeight, "Head Shot");
 
   Timer GameTimer;
   float GameTime = 0;
   int GameFrame = 0;
 
-  std::array<input::Input, 5400> GameInputs;
+  std::array<input::Input, 5400> GameInputs; // pour chaque joueur
 
   // network manager a une reference au renderer et au game
 
@@ -41,8 +42,6 @@ int main() {
 
   Audio audio{};
   audio.Setup();
-
-  PlaySound(audio.music);
 
 #ifdef PLATFORM_WEB
   emscripten_set_main_loop_arg(UpdateDrawFrame, &renderer, 0, 1);
@@ -75,7 +74,9 @@ int main() {
 
         // game_data::GameInputs[game_data::GameFrame] = frameInput;
         game.SetInput(frameInput);
-        game.Update();
+
+        game.Update(GameTimer.DeltaTime);
+
         renderer.SetGameTime(GameTime);
         break;
     }
