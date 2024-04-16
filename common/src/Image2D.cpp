@@ -1,5 +1,7 @@
 #include "Image2D.h"
 
+using namespace raylib;
+
 void Image2D::Setup(const char* path, Vector2 size, Offset offset) {
   tex = LoadTexture(path);
   source = {0, 0, static_cast<float>(tex.width),

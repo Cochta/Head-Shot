@@ -9,6 +9,9 @@ option(USE_TRACY "Use Tracy Profiler" OFF)
 
 option(BUILD_RELEASE "build in release" ON)
 
+set(PHOTON_APP_ID "your_app_id_here" CACHE STRING "Set the photon app id")
+add_definitions("-DPHOTON_APP_ID=\"${PHOTON_APP_ID}\"")
+
 if (BUILD_WEB)
     add_compile_definitions(PLATFORM_WEB)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy")
@@ -55,18 +58,6 @@ file(GLOB_RECURSE DATA_FILES
             )
 list(APPEND data_files ${DATA_FILES})
 
-# Network library
-file(GLOB_RECURSE NETWORK_FILES network/include/*.h network/src/*.cpp)
-add_library(Network ${NETWORK_FILES})
-set_target_properties(Network PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(Network PUBLIC Network/include/)
-target_link_libraries(Network PUBLIC Photon)
-
-if (USE_TRACY)
-    target_compile_definitions(Network PUBLIC TRACY_ENABLE)
-    target_link_libraries(Network PRIVATE tracyClient)
-endif()
-
 # Engine library
 file(GLOB_RECURSE ENGINE_FILES engine/include/*.h engine/src/*.cpp)
 add_library(Engine ${ENGINE_FILES})
@@ -87,7 +78,7 @@ set_target_properties(Common PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(Common PUBLIC common/include/)
 target_include_directories(Common PUBLIC engine/include/)
 target_include_directories(Common PUBLIC libs/Math/include/)
-target_link_libraries(Common PUBLIC raylib Engine Network fmt::fmt)
+target_link_libraries(Common PUBLIC raylib Engine fmt::fmt Photon)
 
 if (USE_TRACY)
     target_compile_definitions(Common PUBLIC TRACY_ENABLE)

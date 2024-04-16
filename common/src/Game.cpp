@@ -6,20 +6,51 @@
 #include <Tracy.hpp>
 #endif
 
-void Game::ProcessInputP1() noexcept {
-  if (input_ & input::kRight) {
-    world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
-  }
-  if (input_ & input::kLeft) {
-    world_.GetBody(player_blue_body_ref_).ApplyForce({-kWalkSpeed, 0});
-  }
-  if ((input_ & input::kJump) && is_player_blue_grounded_) {
-    world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
-    is_player_blue_grounded_ = false;
+void Game::ProcessInput() noexcept {
+  if (player_nbr == 1) {
+    if (input_ & input::kRight) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
+    }
+    if (input_ & input::kLeft) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({-kWalkSpeed, 0});
+    }
+    if ((input_ & input::kJump) && is_player_blue_grounded_) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
+      is_player_blue_grounded_ = false;
+    }
+    if (other_player_input_ & input::kRight) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({kWalkSpeed, 0});
+    }
+    if (other_player_input_ & input::kLeft) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({-kWalkSpeed, 0});
+    }
+    if ((other_player_input_ & input::kJump) && is_player_red_grounded_) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
+      is_player_red_grounded_ = false;
+    }
+  } else {
+    if (input_ & input::kRight) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({kWalkSpeed, 0});
+    }
+    if (input_ & input::kLeft) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({-kWalkSpeed, 0});
+    }
+    if ((input_ & input::kJump) && is_player_red_grounded_) {
+      world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
+      is_player_red_grounded_ = false;
+    }
+    if (other_player_input_ & input::kRight) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
+    }
+    if (other_player_input_ & input::kLeft) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({-kWalkSpeed, 0});
+    }
+    if ((other_player_input_ & input::kJump) && is_player_blue_grounded_) {
+      world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
+      is_player_blue_grounded_ = false;
+    }
   }
 }
-
-void Game::ProcessInputP2() noexcept {}
 
 void Game::Setup() noexcept {
   timer_.SetUp();
@@ -42,7 +73,7 @@ void Game::Update(float deltaTime) noexcept {
       case GameState::kNone:
         break;
       case GameState::kInGame:
-        ProcessInputP1();
+        ProcessInput();
         for (std::size_t i = 0; i < col_refs_.size(); ++i) {
           const auto& col = world_.GetCollider(col_refs_[i]);
 
@@ -117,6 +148,7 @@ void Game::StartGame() {
 GameState Game::GetState() { return state_; }
 
 void Game::SetInput(input::Input input) { input_ = input; }
+void Game::SetOtherInput(input::Input input) { other_player_input_ = input; }
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
 

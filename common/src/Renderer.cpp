@@ -1,12 +1,15 @@
 #include "Renderer.h"
 
+#include "network.h"
+
 void Renderer::StartGame() {
   SetupBall();
   SetupPlayers();
 }
 
-void Renderer::Setup(Game* game) {
+void Renderer::Setup(Game* game, Network* network) {
   game_ = game;
+  network_ = network;
   rotation_timer_.SetUp();
   goal_left.Setup("data/portaLeft.png",
                   {metrics::kGoalSize.X, metrics::kGoalSize.Y},
@@ -28,14 +31,14 @@ void Renderer::TearDown() {
   player_blue.TearDown();
   player_red.TearDown();
 
-  CloseWindow();
+  raylib::CloseWindow();
 }
 
 void Renderer::Draw(void) {
-  BeginDrawing();
+  raylib::BeginDrawing();
   {
-    ClearBackground(SKYBLUE);
-    DrawFPS(5, 5);
+    raylib::ClearBackground(raylib::SKYBLUE);
+    raylib::DrawFPS(5, 5);
 
     rotation_timer_.Tick();
     rotation_time_ += rotation_timer_.DeltaTime;
@@ -44,11 +47,7 @@ void Renderer::Draw(void) {
       case RenderState::kMenu:
         DrawMenu();
         break;
-      case RenderState::kStartGame:
-        game_->StartGame();
-        StartGame();
-        state_ = RenderState::kInGame;
-        break;
+
       case RenderState::kInGame:
         DrawBall();
         DrawPlayers();
@@ -60,7 +59,7 @@ void Renderer::Draw(void) {
 
     // DrawHitbox();
   }
-  EndDrawing();
+  raylib::EndDrawing();
 }
 
 void Renderer::SetGameTime(float time) { game_time_ = time; }
@@ -68,8 +67,8 @@ void Renderer::SetGameTime(float time) { game_time_ = time; }
 void Renderer::ChangeState(RenderState newState) noexcept { state_ = newState; }
 
 void Renderer::SetupBall() {
-  const Vector2 ballSize{game_->GetBallRadius() * 2,
-                         game_->GetBallRadius() * 2};
+  const raylib::Vector2 ballSize{game_->GetBallRadius() * 2,
+                                 game_->GetBallRadius() * 2};
   switch (game_->GetBallType()) {
     case BallType::kFootball:
       ball.Setup("data/football.png", ballSize, Offset::Center);
@@ -109,25 +108,28 @@ void Renderer::SetupPlayers() {
 }
 
 void Renderer::DrawMenu() {
-  const char* text = "Start Game";
-  Rectangle startRect = {
+  static bool isWaitingOtherPlayer = false;
+  static const char* text = "Start Game";
+  raylib::Rectangle startRect = {
       metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.2f,
       metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.1f};
-  Color color = WHITE;
+  raylib::Color color = raylib::WHITE;
 
-  if (CheckCollisionPointRec(GetMousePosition(), startRect)) {
-    color = YELLOW;
-    if (IsMouseButtonPressed(0)) {
-      state_ = RenderState::kStartGame;
-      // todo: send to network manager and the network manager starts the game
+  if (!isWaitingOtherPlayer && CheckCollisionPointRec(raylib::GetMousePosition(), startRect)) {
+    color = raylib::YELLOW;
+    if (raylib::IsMouseButtonPressed(0)) {
+      text = "Waiting for other player";
+      isWaitingOtherPlayer = true;
+      network_->JoinRandomOrCreateRoom();
     }
   }
 
   DrawRectangleRec(startRect, color);
 
-  DrawRaylibText(
-      text, metrics::kWindowWidth * 0.5f - MeasureText(text, kFontSize) * 0.5f,
-      metrics::kWindowHeight * 0.2f + 30, 30, BLACK);
+  raylib::DrawRaylibText(text,
+                         metrics::kWindowWidth * 0.5f -
+                             raylib::MeasureText(text, kFontSize) * 0.5f,
+                         metrics::kWindowHeight * 0.2f + 30, 30, raylib::BLACK);
 }
 
 void Renderer::DrawTimer() {
@@ -139,10 +141,11 @@ void Renderer::DrawTimer() {
 
   int textSize = kFontSize * 2;
 
-  DrawRaylibText(formattedTime.c_str(),
-                 metrics::kWindowWidth * 0.5f -
-                     MeasureText(formattedTime.c_str(), textSize) * 0.5f,
-                 metrics::kWindowHeight * 0.2f + 30, textSize, BLACK);
+  raylib::DrawRaylibText(
+      formattedTime.c_str(),
+      metrics::kWindowWidth * 0.5f -
+          raylib::MeasureText(formattedTime.c_str(), textSize) * 0.5f,
+      metrics::kWindowHeight * 0.2f + 30, textSize, raylib::BLACK);
 }
 
 void Renderer::DrawBall() {
@@ -194,29 +197,30 @@ void Renderer::DrawTerrain() {
 
 void Renderer::DrawHitbox() {
   const auto ballPos = game_->GetBallPosition();
-  DrawCircle(ballPos.X, ballPos.Y, game_->GetBallRadius(),
-             WHITE);  // ball
+  raylib::DrawCircle(ballPos.X, ballPos.Y, game_->GetBallRadius(),
+                     raylib::WHITE);  // ball
 
-  DrawRectangle(0, metrics::kWindowHeight - metrics::kGroundSize.Y,
-                metrics::kWindowWidth, metrics::kGroundSize.Y,
-                GREEN);  // ground
+  raylib::DrawRectangle(0, metrics::kWindowHeight - metrics::kGroundSize.Y,
+                        metrics::kWindowWidth, metrics::kGroundSize.Y,
+                        raylib::GREEN);  // ground
 
   const auto playerBluePos = game_->GetPlayerBluePos();
   const auto playerRedPos = game_->GetPlayerRedPos();
 
-  DrawCircle(playerBluePos.X, playerBluePos.Y, metrics::kPlayerRadius,
-             BLUE);  // player blue
+  raylib::DrawCircle(playerBluePos.X, playerBluePos.Y, metrics::kPlayerRadius,
+                     raylib::BLUE);  // player blue
 
-  DrawCircle(playerRedPos.X, playerRedPos.Y, metrics::kPlayerRadius,
-             RED);  // player red
+  raylib::DrawCircle(playerRedPos.X, playerRedPos.Y, metrics::kPlayerRadius,
+                     raylib::RED);  // player red
 
-  DrawRectangle(
+  raylib::DrawRectangle(
       0, metrics::kWindowHeight - metrics::kGroundSize.Y - metrics::kGoalSize.Y,
-      metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f, WHITE);  // goal left
+      metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f,
+      raylib::WHITE);  // goal left
 
-  DrawRectangle(
+  raylib::DrawRectangle(
       metrics::kWindowWidth - metrics::kGoalSize.X,
       metrics::kWindowHeight - metrics::kGroundSize.Y - metrics::kGoalSize.Y,
       metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f,
-      WHITE);  // goal right
+      raylib::WHITE);  // goal right
 }

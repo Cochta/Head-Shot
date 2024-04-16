@@ -8,13 +8,17 @@
 #include "GameData.h"
 #include "Image2D.h"
 #include "Timer.h"
-enum class RenderState { kMenu, kStartGame, kInGame };
+
+class Network;
+
+enum class RenderState { kMenu, kInGame };
 
 class Renderer {
  private:
-  RenderState state_ = RenderState::kMenu;
 
   Game* game_;
+  Network* network_;
+
   static constexpr int kFontSize = 30;
 
   Timer rotation_timer_;
@@ -24,6 +28,8 @@ class Renderer {
   float game_time_ = 0.f;
 
  public:
+  RenderState state_ = RenderState::kMenu;
+
   Image2D ball;
   Image2D ground;
   Image2D goal_left;
@@ -35,7 +41,7 @@ class Renderer {
 
   void StartGame();
 
-  void Setup(Game* game);
+  void Setup(Game* game, Network* network);
 
   void TearDown();
 

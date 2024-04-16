@@ -3,25 +3,21 @@
 #include <Common-cpp/inc/Logger.h>
 #include <LoadBalancing-cpp/inc/Client.h>
 
-#include "listener.h"
 #include "packet.h"
+
+#include "Game.h"
+#include "Renderer.h"
 
 class Network final : public ExitGames::LoadBalancing::Listener {
  public:
   // network funcs
   Network(const ExitGames::Common::JString& appID,
-          const ExitGames::Common::JString& appVersion);
+          const ExitGames::Common::JString& appVersion, Game* game, Renderer* renderer);
   void Connect();
   void Disconnect();
   void Service();
 
   void JoinRandomOrCreateRoom() noexcept;
-
-  void CreateRoom(const ExitGames::Common::JString& roomName, nByte maxPlayers);
-
-  void JoinRandomRoom(
-      ExitGames::Common::Hashtable expectedCustomRoomProperties =
-          ExitGames::Common::Hashtable());
   void RaiseEvent(bool reliable, PacketType type,
                   const ExitGames::Common::Hashtable& event_data) noexcept;
   void ReceiveEvent(int player_nr, PacketType type,
@@ -64,4 +60,6 @@ class Network final : public ExitGames::LoadBalancing::Listener {
   ExitGames::LoadBalancing::Client load_balancing_client_;
   ExitGames::Common::Logger
       mLogger;  // name must be mLogger because it is accessed by EGLOG()
+  Game* game_;
+  Renderer* renderer_;
 };

@@ -26,6 +26,7 @@ class Game : public ContactListener {
   GameState state_ = GameState::kNone;
 
   input::Input input_{};
+  input::Input other_player_input_{};
 
   std::vector<BodyRef> body_refs_;
   std::vector<ColliderRef> col_refs_;
@@ -58,8 +59,9 @@ class Game : public ContactListener {
   static constexpr float kFixedDeltaTime = 1.f / metrics::kFPS;
 
  public:
-  void ProcessInputP1() noexcept;
-  void ProcessInputP2() noexcept;
+  int player_nbr = -1;
+
+  void ProcessInput() noexcept;
 
   void Setup() noexcept;
   void Update(float deltaTime) noexcept;
@@ -69,6 +71,7 @@ class Game : public ContactListener {
   GameState GetState();
 
   void SetInput(input::Input input);
+  void SetOtherInput(input::Input input);
 
   float GetBallRadius() const noexcept;
   Math::Vec2F GetBallPosition() noexcept;

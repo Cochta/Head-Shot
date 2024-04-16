@@ -2,8 +2,6 @@
 
 #include "raylib_wrapper.h"
 
-using namespace raylib;
-
 enum class Offset {
   Center,
   TopLeft,
@@ -15,13 +13,13 @@ enum class Offset {
 };
 class Image2D {
  public:
-  Texture2D tex;
-  Vector2 pos;
-  Vector2 origin;
-  Rectangle source;
-  Rectangle dest;
+  raylib::Texture2D tex;
+  raylib::Vector2 pos;
+  raylib::Vector2 origin;
+  raylib::Rectangle source;
+  raylib::Rectangle dest;
 
-  void Setup(const char* path, Vector2 size, Offset = Offset::Center);
+  void Setup(const char* path, raylib::Vector2 size, Offset = Offset::Center);
   void TearDown();
-  void Draw(Vector2 position, float rotation = 0);
+  void Draw(raylib::Vector2 position, float rotation = 0);
 };

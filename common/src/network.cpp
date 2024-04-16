@@ -1,8 +1,11 @@
 #include "network.h"
 
 Network::Network(const ExitGames::Common::JString& appID,
-                 const ExitGames::Common::JString& appVersion)
-    : load_balancing_client_(*this, appID, appVersion) {}
+                 const ExitGames::Common::JString& appVersion, Game* game,
+                 Renderer* renderer)
+    : load_balancing_client_(*this, appID, appVersion),
+      game_(game),
+      renderer_(renderer) {}
 
 void Network::Connect() {
   // Connect() is asynchronous - the actual result arrives in the
@@ -27,24 +30,6 @@ void Network::Disconnect() {
                       // arrives in the Network::disconnectReturn() callback
 }
 
-void Network::CreateRoom(const ExitGames::Common::JString& roomName,
-                         nByte maxPlayers) {
-  if (load_balancing_client_.opCreateRoom(
-          roomName,
-          ExitGames::LoadBalancing::RoomOptions().setMaxPlayers(maxPlayers))) {
-    std::cout << "Room successfully created with name: "
-              << roomName.UTF8Representation().cstr() << '\n';
-  }
-}
-
-void Network::JoinRandomRoom(
-    ExitGames::Common::Hashtable expectedCustomRoomProperties) {
-  load_balancing_client_.opJoinRandomRoom(expectedCustomRoomProperties);
-
-  // is_master_ = load_balancing_client_.getLocalPlayer().getIsMasterClient();
-  // std::cout << "is master: " << is_master_ << '\n';
-}
-
 void Network::RaiseEvent(bool reliable, PacketType type,
                          const ExitGames::Common::Hashtable& data) noexcept {
   if (!load_balancing_client_.opRaiseEvent(reliable, data,
@@ -62,12 +47,16 @@ void Network::ReceiveEvent(int player_nr, PacketType type,
         L"just arrived: %ls",
         static_cast<nByte>(type), player_nr, data.toString(true).cstr());
 
-  std::cout << "event content: " << data.toString().UTF8Representation().cstr()
-            << '\n';
+  // std::cout << "event content: " <<
+  // data.toString().UTF8Representation().cstr() << '\n';
 
   switch (type) {
-    case PacketType::kInput:
-      break;
+    case PacketType::kInput: {
+      game_->SetOtherInput(
+          ExitGames::Common::ValueObject<input::Input>(
+              data.getValue(static_cast<nByte>(PacketKey::kInput)))
+              .getDataCopy());
+    } break;
     case PacketType::kLeft:
       break;
     case PacketType::kRight:
@@ -106,6 +95,15 @@ void Network::serverErrorReturn(int errorCode) {
 void Network::joinRoomEventAction(
     int playerNr, const ExitGames::Common::JVector<int>& playernrs,
     const ExitGames::LoadBalancing::Player& player) {
+  if (game_->player_nbr == -1) {
+    game_->player_nbr = playerNr;
+  }
+  if (playerNr == 2) {
+    game_->StartGame();
+    renderer_->StartGame();
+    renderer_->state_ = RenderState::kInGame;
+  }
+
   std::cout << "Room state: player nr: " << playerNr
             << " player nrs size: " << playernrs.getSize() << " player userID: "
             << player.getUserID().UTF8Representation().cstr() << '\n';
