@@ -94,12 +94,21 @@ void Game::Update(float deltaTime) noexcept {
                   playerBody.Velocity.X = -kMaxSpeed;
                 }
                 playerBody.ApplyForce({0, kPlayerGravity});
-                // simulate friction with fground
 
-                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                    is_player_blue_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                // simulate friction with fground
+                if (player_nbr == 1) {
+                  if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                      is_player_blue_grounded_) {
+                    playerBody.Velocity = playerBody.Velocity.Lerp(
+                        Math::Vec2F::Zero(), 1.f / 10.f);
+                  }
+                } else {
+                  if (!(other_player_input_ & input::kRight) &&
+                      !(other_player_input_ & input::kLeft) &&
+                      is_player_blue_grounded_) {
+                    playerBody.Velocity = playerBody.Velocity.Lerp(
+                        Math::Vec2F::Zero(), 1.f / 10.f);
+                  }
                 }
               } else if (col.BodyRef == player_red_body_ref_) {
                 auto& playerBody = world_.GetBody(col.BodyRef);
@@ -112,11 +121,21 @@ void Game::Update(float deltaTime) noexcept {
                 playerBody.ApplyForce({0, kPlayerGravity});
 
                 // simulate friction with ground
-                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                    is_player_red_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                if (player_nbr == 2) {
+                  if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                      is_player_red_grounded_) {
+                    playerBody.Velocity = playerBody.Velocity.Lerp(
+                        Math::Vec2F::Zero(), 1.f / 10.f);
+                  }
+                } else {
+                  if (!(other_player_input_ & input::kRight) &&
+                      !(other_player_input_ & input::kLeft) &&
+                      is_player_red_grounded_) {
+                    playerBody.Velocity = playerBody.Velocity.Lerp(
+                        Math::Vec2F::Zero(), 1.f / 10.f);
+                  }
                 }
+                
               }
               break;
             case static_cast<int>(Math::ShapeType::Rectangle):
