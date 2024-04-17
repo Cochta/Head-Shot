@@ -57,16 +57,18 @@ void Network::ReceiveEvent(int player_nr, PacketType type,
               data.getValue(static_cast<nByte>(PacketKey::kInput)))
               .getDataCopy());
     } break;
-    case PacketType::kLeft:
+    case PacketType::kLastFrameInputs:
+      //const auto inputData =
+      //    ExitGames::Common::ValueObject<
+      //        std::array<std::pair<int, input::Input>, 10>>(
+      //        data.getValue(static_cast<nByte>(PacketKey::kLastFrameInputs)))
+      //        .getDataCopy();
+      //for (int i = 0; i < inputData.size(); ++i) {
+      //  printf("\nframe: %i - %i", inputData[i].first, inputData[i].second);
+      //}
+
       break;
-    case PacketType::kRight:
-      break;
-    case PacketType::kJump:
-      break;
-    case PacketType::kShoot:
-      break;
-    default:
-      break;
+    default:;
   }
 }
 
@@ -101,7 +103,6 @@ void Network::joinRoomEventAction(
   if (playerNr == 2) {
     game_->StartGame();
     renderer_->StartGame();
-    renderer_->state_ = RenderState::kInGame;
   }
 
   std::cout << "Room state: player nr: " << playerNr
@@ -136,6 +137,7 @@ void Network::connectReturn(int errorCode,
             << " "
             << "region: " << region.UTF8Representation().cstr() << " "
             << "cluster: " << cluster.UTF8Representation().cstr() << '\n';
+  is_connected_ = true;
 }
 
 void Network::disconnectReturn() { std::cout << "client disconnected\n"; }

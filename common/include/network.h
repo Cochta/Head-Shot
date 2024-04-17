@@ -3,19 +3,21 @@
 #include <Common-cpp/inc/Logger.h>
 #include <LoadBalancing-cpp/inc/Client.h>
 
-#include "packet.h"
-
 #include "Game.h"
 #include "Renderer.h"
+#include "packet.h"
 
 class Network final : public ExitGames::LoadBalancing::Listener {
  public:
   // network funcs
   Network(const ExitGames::Common::JString& appID,
-          const ExitGames::Common::JString& appVersion, Game* game, Renderer* renderer);
+          const ExitGames::Common::JString& appVersion, Game* game,
+          Renderer* renderer);
   void Connect();
   void Disconnect();
   void Service();
+
+  bool IsConnected() const noexcept { return is_connected_; };
 
   void JoinRandomOrCreateRoom() noexcept;
   void RaiseEvent(bool reliable, PacketType type,
@@ -57,6 +59,7 @@ class Network final : public ExitGames::LoadBalancing::Listener {
                                     const ExitGames::Common::JString&) override;
 
  private:
+  bool is_connected_ = false;
   ExitGames::LoadBalancing::Client load_balancing_client_;
   ExitGames::Common::Logger
       mLogger;  // name must be mLogger because it is accessed by EGLOG()

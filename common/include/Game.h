@@ -13,7 +13,7 @@ enum class BallType {
   kCount
 };
 
-enum class GameState { kNone, kInGame };
+enum class GameState { kMenu, kInGame, kGameFinished };
 
 /**
  * \brief Handles the physics state of the app
@@ -23,7 +23,10 @@ class Game : public ContactListener {
   World world_;
   Timer timer_;
 
-  GameState state_ = GameState::kNone;
+  GameState state_ = GameState::kMenu;
+
+  std::array<std::pair<int, input::Input>, 10> last_frame_input_;
+  int game_frame_ = 0;
 
   input::Input input_{};
   input::Input other_player_input_{};
@@ -80,6 +83,10 @@ class Game : public ContactListener {
 
   Math::Vec2F GetPlayerBluePos() noexcept;
   Math::Vec2F GetPlayerRedPos() noexcept;
+
+  std::array<std::pair<int, input::Input>, 10> GetLastFrameInputs() noexcept {
+    return last_frame_input_;
+  }
 
   void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override{};
 

@@ -11,34 +11,34 @@
 
 class Network;
 
-enum class RenderState { kMenu, kInGame };
-
 class Renderer {
  private:
-
-  Game* game_;
-  Network* network_;
+  Game* game_{};
+  Network* network_{};
 
   static constexpr int kFontSize = 30;
 
   Timer rotation_timer_;
   float rotation_time_ = 0.f;
-  float ballCurrentRotation = 0.f;
+  float ball_current_rotation_ = 0.f;
 
   float game_time_ = 0.f;
 
+  raylib::Rectangle start_btn_rect = {
+      metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.2f,
+      metrics::kWindowWidth * 0.333f, metrics::kWindowHeight * 0.1f};
+  raylib::Color start_btn_text_color_ = raylib::WHITE;
+
+  Image2D ball_{};
+  Image2D ground_{};
+  Image2D goal_left_{};
+  Image2D goal_right_{};
+  Image2D player_blue_{};
+  Image2D player_blue_left_feet_{};
+  Image2D player_blue_right_feet_{};
+  Image2D player_red_{};
+
  public:
-  RenderState state_ = RenderState::kMenu;
-
-  Image2D ball;
-  Image2D ground;
-  Image2D goal_left;
-  Image2D goal_right;
-  Image2D player_blue;
-  Image2D player_blue_left_feet;
-  Image2D player_blue_right_feet;
-  Image2D player_red;
-
   void StartGame();
 
   void Setup(Game* game, Network* network);
@@ -48,8 +48,6 @@ class Renderer {
   void Draw(void);
 
   void SetGameTime(float time);
-
-  void ChangeState(RenderState newState) noexcept;
 
  private:
   void SetupBall();

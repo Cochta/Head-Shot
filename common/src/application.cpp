@@ -9,10 +9,10 @@ void Application::Setup() {
   SetConfigFlags(FLAG_VSYNC_HINT);
   InitWindow(metrics::kWindowWidth, metrics::kWindowHeight, "Head Shot");
 
-  network_.Connect();
-
   renderer_.Setup(&game_, &network_);
   audio_.Setup();
+
+  network_.Connect();
 }
 
 void Application::Run() {
@@ -24,37 +24,45 @@ void Application::Run() {
   while (!WindowShouldClose()) {
     network_.Service();
     switch (game_.GetState()) {
-      case GameState::kNone:
+      case GameState::kMenu:
         break;
-      case GameState::kInGame:
-        if (GameTime <= 0) {
-          GameTimer.SetUp();
+      case GameState::kInGame: {
+        if (game_time_ <= 0) {
+          game_timer_.SetUp();
         }
-        GameTimer.Tick();
-        GameTime += GameTimer.DeltaTime;
-        GameFrame++;
+        game_timer_.Tick();
+        game_time_ += game_timer_.DeltaTime;
+        game_frame_++;
 
         input::Input frameInput = 0;
 
-        if (IsKeyDown(KEY_D)) {
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
           frameInput |= input::kRight;
         }
-        if (IsKeyDown(KEY_A)) {
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
           frameInput |= input::kLeft;
         }
-        if (IsKeyDown(KEY_SPACE) || IsKeyPressed(KEY_W)) {
+        if (IsKeyDown(KEY_SPACE) || IsKeyPressed(KEY_W) || IsKeyDown(KEY_UP)) {
           frameInput |= input::kJump;
         }
-
-        // game_data::GameInputs[game_data::GameFrame] = frameInput;
         game_.SetInput(frameInput);
         ExitGames::Common::Hashtable data;
         data.put(static_cast<nByte>(PacketKey::kInput), frameInput);
+
         network_.RaiseEvent(true, PacketType::kInput, data);
 
-        game_.Update(GameTimer.DeltaTime);
+        //const auto frameInutes = game_.GetLastFrameInputs();
+        //ExitGames::Common::Hashtable inputData;
+        //inputData.put(static_cast<nByte>(PacketKey::kLastFrameInputs),
+        //              frameInutes);
+        //network_.RaiseEvent(true, PacketType::kLastFrameInputs, inputData);
 
-        renderer_.SetGameTime(GameTime);
+        game_.Update(game_timer_.DeltaTime);
+
+        renderer_.SetGameTime(game_time_);
+      } break;
+      case GameState::kGameFinished:
+        // network leave room
         break;
     }
     renderer_.Draw();
@@ -67,6 +75,7 @@ void Application::Run() {
 }
 
 void Application::TearDown() {
+  network_.Disconnect();
   renderer_.TearDown();
   audio_.TearDown();
   game_.TearDown();

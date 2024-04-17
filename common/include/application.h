@@ -18,11 +18,11 @@ class Application {
 
  private:
   Game game_;
-  Audio audio_;
-  Renderer renderer_;
+  Audio audio_{};
+  Renderer renderer_{};
   Network network_{PHOTON_APP_ID, "V1.0", &game_, &renderer_};
 
-  Timer GameTimer;
-  float GameTime = 0;
-  int GameFrame = 0;
+  Timer game_timer_;
+  float game_time_ = 0;
+  int game_frame_ = 0;
 };

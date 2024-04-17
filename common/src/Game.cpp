@@ -70,7 +70,7 @@ void Game::Update(float deltaTime) noexcept {
 
   while (time >= kFixedDeltaTime) {
     switch (state_) {
-      case GameState::kNone:
+      case GameState::kMenu:
         break;
       case GameState::kInGame:
         ProcessInput();
@@ -135,7 +135,6 @@ void Game::Update(float deltaTime) noexcept {
                         Math::Vec2F::Zero(), 1.f / 10.f);
                   }
                 }
-                
               }
               break;
             case static_cast<int>(Math::ShapeType::Rectangle):
@@ -146,6 +145,18 @@ void Game::Update(float deltaTime) noexcept {
         }
         timer_.Tick();
         world_.Update(kFixedDeltaTime);
+        game_frame_++;
+        for (std::size_t i = 0; i < last_frame_input_.size() - 1; ++i) {
+          last_frame_input_[i] = last_frame_input_[i + 1];
+          /*printf("\nframe: %i - %i", last_frame_input_[i].first,
+                 last_frame_input_[i].second);*/
+        }
+        last_frame_input_[last_frame_input_.size() - 1] = {game_frame_, input_};
+        if (game_frame_ >= 5400) {
+          state_ = GameState::kGameFinished;
+        }
+        break;
+      case GameState::kGameFinished:
         break;
       default:;
     }
