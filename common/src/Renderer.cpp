@@ -43,6 +43,10 @@ void Renderer::Draw(void) {
     rotation_timer_.Tick();
     rotation_time_ += rotation_timer_.DeltaTime;
 
+    DrawTerrain();
+
+    // DrawHitbox();
+
     switch (game_->GetState()) {
       case GameState::kMenu:
         DrawMenu();
@@ -55,10 +59,6 @@ void Renderer::Draw(void) {
         DrawTimer();
         break;
     }
-
-    DrawTerrain();
-
-    // DrawHitbox();
   }
   raylib::EndDrawing();
 }
@@ -94,17 +94,29 @@ void Renderer::SetupPlayers() {
       {metrics::kPlayerRadius * 2.f, metrics::kPlayerRadius * 2.f},
       Offset::Center);
 
-  // player_blue_left_feet.Setup("data/PlayerBluLeftLeg.png", 5.f,
-  //                             Offset::DownRight);
-  // player_blue_right_feet.Setup("data/PlayerBluRightLeg.png", 5.f,
-  //                              Offset::DownLeft);
-  // metrics::FeetHeight = player_blue_left_feet.dest.height;
+  player_blue_left_feet_.Setup(
+      "data/PlayerBluLeftLeg.png",
+      {metrics::kPlayerRadius, metrics::kPlayerRadius * 0.5f},
+      Offset::DownRight);
+  player_blue_right_feet_.Setup(
+      "data/PlayerBluRightLeg.png",
+      {metrics::kPlayerRadius, metrics::kPlayerRadius * 0.5f},
+      Offset::DownLeft);
 
   // player red
   player_red_.Setup(
       "data/PlayerRed.png",
       {metrics::kPlayerRadius * 2.f, metrics::kPlayerRadius * 2.f},
       Offset::Center);
+
+  player_red_left_feet_.Setup(
+      "data/PlayerRedLeftLeg.png",
+      {metrics::kPlayerRadius, metrics::kPlayerRadius * 0.5f},
+      Offset::DownRight);
+  player_red_right_feet_.Setup(
+      "data/PlayerRedRightLeg.png",
+      {metrics::kPlayerRadius, metrics::kPlayerRadius * 0.5f},
+      Offset::DownLeft);
 }
 
 void Renderer::DrawMenu() {
@@ -180,13 +192,21 @@ void Renderer::DrawPlayers() {
 
   player_red_.Draw({playerRedPos.X, playerRedPos.Y});
 
-  // player_blue_left_feet.Draw(
-  //     {game_data::PlayerBluePos.X,
-  //      game_data::PlayerBluePos.Y + metrics::kPlayerRadius});
+  player_blue_left_feet_.Draw(
+      {playerBluePos.X, playerBluePos.Y + metrics::kPlayerRadius +
+                            player_blue_left_feet_.dest.height * 0.5f});
 
-  // player_blue_right_feet.Draw(
-  //     {game_data::PlayerBluePos.X,
-  //      game_data::PlayerBluePos.Y + metrics::kPlayerRadius});
+  player_blue_right_feet_.Draw(
+      {playerBluePos.X, playerBluePos.Y + metrics::kPlayerRadius +
+                            player_blue_right_feet_.dest.height * 0.5f});
+
+  player_red_left_feet_.Draw(
+      {playerRedPos.X, playerRedPos.Y + metrics::kPlayerRadius +
+                            player_red_left_feet_.dest.height * 0.5f});
+
+  player_red_right_feet_.Draw(
+      {playerRedPos.X, playerRedPos.Y + metrics::kPlayerRadius +
+                            player_red_right_feet_.dest.height * 0.5f});
 }
 
 void Renderer::DrawTerrain() {

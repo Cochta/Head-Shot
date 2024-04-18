@@ -37,6 +37,8 @@ class Renderer {
   Image2D player_blue_left_feet_{};
   Image2D player_blue_right_feet_{};
   Image2D player_red_{};
+  Image2D player_red_left_feet_{};
+  Image2D player_red_right_feet_{};
 
  public:
   void StartGame();
