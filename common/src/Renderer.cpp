@@ -135,6 +135,10 @@ void Renderer::DrawMenu() {
         if (raylib::IsMouseButtonPressed(0)) {
           isWaitingOtherPlayer = true;
           network_->JoinRandomOrCreateRoom();
+
+          //for test
+          /*game_->StartGame();
+          StartGame();*/
         }
       }
     }

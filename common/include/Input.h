@@ -11,4 +11,9 @@ constexpr Input kLeft = 1 << 1;
 constexpr Input kRight = 1 << 2;
 constexpr Input kKick = 1 << 3;
 
+struct FrameInput {
+  Input input;
+  short frame_nbr;
+};
+
 }  // namespace input

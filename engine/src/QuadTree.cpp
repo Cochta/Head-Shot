@@ -10,7 +10,7 @@ QuadNode::QuadNode(const Math::RectangleF& bounds, Allocator& alloc) noexcept : 
 	ColliderRefAabbs.reserve(16);
 }
 
-QuadTree::QuadTree(Allocator& alloc) noexcept : _alloc(alloc), Nodes{ StandardAllocator<QuadNode>{alloc} }
+QuadTree::QuadTree() noexcept
 {
 	std::size_t result = 0;
 	for (size_t i = 0; i <= MAX_DEPTH; i++)

@@ -24,7 +24,7 @@ private:
 public:
 	std::vector<size_t> BodyGenIndices; /**< Indices of generated bodies. */
 	std::vector<size_t> ColliderGenIndices; /**< Indices of generated colliders. */
-	QuadTree QuadTree{ _heapAlloc };/**< QuadTree for collision checks */
+	QuadTree QuadTree{};/**< QuadTree for collision checks */
 	/**
 	 * @brief Default constructor for the _world class.
 	 */

@@ -3,7 +3,7 @@
 #include <Common-cpp/inc/Logger.h>
 #include <LoadBalancing-cpp/inc/Client.h>
 
-#include "Game.h"
+#include "rollback.h"
 #include "Renderer.h"
 #include "packet.h"
 
@@ -12,7 +12,7 @@ class Network final : public ExitGames::LoadBalancing::Listener {
   // network funcs
   Network(const ExitGames::Common::JString& appID,
           const ExitGames::Common::JString& appVersion, Game* game,
-          Renderer* renderer);
+          Renderer* renderer, Rollback* rollback);
   void Connect();
   void Disconnect();
   void Service();
@@ -65,4 +65,5 @@ class Network final : public ExitGames::LoadBalancing::Listener {
       mLogger;  // name must be mLogger because it is accessed by EGLOG()
   Game* game_;
   Renderer* renderer_;
+  Rollback* rollback_;
 };

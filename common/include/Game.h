@@ -4,6 +4,8 @@
 #include "Timer.h"
 #include "World.h"
 
+class Rollback;
+
 enum class BallType {
   kFootball = 0,
   kVolleyball,
@@ -21,12 +23,14 @@ enum class GameState { kMenu, kInGame, kGameFinished };
 class Game : public ContactListener {
  private:
   World world_;
-  Timer timer_;
+
+  Rollback* rollback_;
 
   GameState state_ = GameState::kMenu;
 
   std::array<std::pair<int, input::Input>, 10> last_frame_input_;
-  int game_frame_ = 0;
+
+  int game_frame_ = -1;
 
   input::Input input_{};
   input::Input other_player_input_{};
@@ -37,13 +41,19 @@ class Game : public ContactListener {
   ColliderRef ground_col_ref_{};
 
   ColliderRef player_blue_col_ref_{};
-  // BodyRef _player_blue_feet_body_ref;
-  // ColliderRef _player_blue_feet_col_ref;
+
+  ColliderRef player_blue_feet_col_ref_;
+
+  Timer player_blue_shoot_timer_;
+  float player_blue_shoot_time_ = 1.f;
+
+  bool can_player_blue_shoot_ = false;
 
   ColliderRef player_red_col_ref_{};
 
   BallType ball_type_ = BallType::kFootball;
   BodyRef ball_body_ref_{};
+  ColliderRef ball_col_ref_{};
   float ball_radius_ = metrics::kBallRadiusMedium;
 
   BodyRef player_blue_body_ref_{};
@@ -56,30 +66,30 @@ class Game : public ContactListener {
   static constexpr float kPlayerGravity = 2500;
   static constexpr float kWalkSpeed = 1500;
   static constexpr float kMaxSpeed = 1200;
-  static constexpr float kJumpSpeed = -50000;
+  static constexpr float kJumpSpeed = -75000;
   static constexpr float kPlayerMass = 5;
 
-  static constexpr float kFixedDeltaTime = 1.f / metrics::kFPS;
+  static constexpr float kShootForce = 25000;
 
  public:
   int player_nbr = -1;
+  Game(Rollback* rollback);
 
   void ProcessInput() noexcept;
 
   void Setup() noexcept;
   void Update(float deltaTime) noexcept;
+  void FixedUpdate(short frame_nbr);
   void TearDown() noexcept;
 
   void StartGame();
   GameState GetState();
 
-  void SetInput(input::Input input);
-  void SetOtherInput(input::Input input);
-
   float GetBallRadius() const noexcept;
   Math::Vec2F GetBallPosition() noexcept;
   Math::Vec2F GetBallVelocity() noexcept;
   BallType GetBallType() noexcept;
+  int GetGameFrame() noexcept { return game_frame_; };
 
   Math::Vec2F GetPlayerBluePos() noexcept;
   Math::Vec2F GetPlayerRedPos() noexcept;
@@ -88,13 +98,15 @@ class Game : public ContactListener {
     return last_frame_input_;
   }
 
-  void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override{};
+  void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 
-  void OnTriggerExit(ColliderRef col1, ColliderRef col2) noexcept override{};
+  void OnTriggerExit(ColliderRef col1, ColliderRef col2) noexcept override;
 
   void OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 
   void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override{};
+
+  int CheckSum() noexcept;
 
  private:
   void CreateBall() noexcept;

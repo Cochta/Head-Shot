@@ -6,8 +6,12 @@
 #include <Tracy.hpp>
 #endif
 
+#include "rollback.h"
+
+Game::Game(Rollback* rollback) : rollback_(rollback) {}
+
 void Game::ProcessInput() noexcept {
-  if (player_nbr == 1) {
+  if (player_nbr == 0) {
     if (input_ & input::kRight) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
     }
@@ -17,6 +21,11 @@ void Game::ProcessInput() noexcept {
     if ((input_ & input::kJump) && is_player_blue_grounded_) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_blue_grounded_ = false;
+    }
+    if ((input_ & input::kKick) && can_player_blue_shoot_ &&
+        player_blue_shoot_time_ >= 1.0f) {
+      world_.GetBody(ball_body_ref_).ApplyForce({kShootForce, -kShootForce});
+      player_blue_shoot_time_ = 0.f;
     }
     if (other_player_input_ & input::kRight) {
       world_.GetBody(player_red_body_ref_).ApplyForce({kWalkSpeed, 0});
@@ -53,114 +62,115 @@ void Game::ProcessInput() noexcept {
 }
 
 void Game::Setup() noexcept {
-  timer_.SetUp();
   world_.SetUp();
   world_.SetContactListener(this);
   CreateBall();
   CreateTerrain();
   CreatePlayers();
+  player_blue_shoot_timer_.SetUp();
 }
 
 void Game::Update(float deltaTime) noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
-  static float time = kFixedDeltaTime;
-  time += deltaTime;
+  game_frame_++;
+  FixedUpdate(game_frame_);
+  if (game_frame_ >= 5400) {
+    state_ = GameState::kGameFinished;
+  }
+}
 
-  while (time >= kFixedDeltaTime) {
-    switch (state_) {
-      case GameState::kMenu:
-        break;
-      case GameState::kInGame:
-        ProcessInput();
-        for (std::size_t i = 0; i < col_refs_.size(); ++i) {
-          const auto& col = world_.GetCollider(col_refs_[i]);
+void Game::FixedUpdate(short frame_nbr) {
+#ifdef TRACY_ENABLE
+  ZoneScoped;
+#endif
 
-          const auto& shape = world_.GetCollider(col_refs_[i]).Shape;
+  switch (state_) {
+    case GameState::kMenu:
+      break;
+    case GameState::kInGame:
+      player_blue_shoot_time_ += player_blue_shoot_timer_.DeltaTime;
+      input_ = rollback_->GetPlayerInputAtFrame(player_nbr, frame_nbr);
+      other_player_input_ =
+          rollback_->GetPlayerInputAtFrame(player_nbr == 0 ? 1 : 0, frame_nbr);
+      ProcessInput();
 
-          switch (shape.index()) {
-            case static_cast<int>(Math::ShapeType::Circle):
-              if (col.BodyRef == ball_body_ref_) {
-                auto& ballBody = world_.GetBody(col.BodyRef);
-                ballBody.ApplyForce({0, kBallGravity});
+      for (std::size_t i = 0; i < col_refs_.size(); ++i) {
+        const auto& col = world_.GetCollider(col_refs_[i]);
 
-              } else if (col.BodyRef == player_blue_body_ref_) {
-                auto& playerBody = world_.GetBody(col.BodyRef);
+        const auto& shape = world_.GetCollider(col_refs_[i]).Shape;
 
-                if (playerBody.Velocity.X > kMaxSpeed) {
-                  playerBody.Velocity.X = kMaxSpeed;
-                } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                  playerBody.Velocity.X = -kMaxSpeed;
+        switch (shape.index()) {
+          case static_cast<int>(Math::ShapeType::Circle):
+            if (col.BodyRef == ball_body_ref_) {
+              auto& ballBody = world_.GetBody(col.BodyRef);
+              ballBody.ApplyForce({0, kBallGravity});
+
+            } else if (col.BodyRef == player_blue_body_ref_) {
+              auto& playerBody = world_.GetBody(col.BodyRef);
+
+              if (playerBody.Velocity.X > kMaxSpeed) {
+                playerBody.Velocity.X = kMaxSpeed;
+              } else if (playerBody.Velocity.X < -kMaxSpeed) {
+                playerBody.Velocity.X = -kMaxSpeed;
+              }
+              playerBody.ApplyForce({0, kPlayerGravity});
+
+              // simulate friction with fground
+              if (player_nbr == 0) {
+                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                    is_player_blue_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
                 }
-                playerBody.ApplyForce({0, kPlayerGravity});
-
-                // simulate friction with fground
-                if (player_nbr == 1) {
-                  if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                      is_player_blue_grounded_) {
-                    playerBody.Velocity = playerBody.Velocity.Lerp(
-                        Math::Vec2F::Zero(), 1.f / 10.f);
-                  }
-                } else {
-                  if (!(other_player_input_ & input::kRight) &&
-                      !(other_player_input_ & input::kLeft) &&
-                      is_player_blue_grounded_) {
-                    playerBody.Velocity = playerBody.Velocity.Lerp(
-                        Math::Vec2F::Zero(), 1.f / 10.f);
-                  }
-                }
-              } else if (col.BodyRef == player_red_body_ref_) {
-                auto& playerBody = world_.GetBody(col.BodyRef);
-
-                if (playerBody.Velocity.X > kMaxSpeed) {
-                  playerBody.Velocity.X = kMaxSpeed;
-                } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                  playerBody.Velocity.X = -kMaxSpeed;
-                }
-                playerBody.ApplyForce({0, kPlayerGravity});
-
-                // simulate friction with ground
-                if (player_nbr == 2) {
-                  if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                      is_player_red_grounded_) {
-                    playerBody.Velocity = playerBody.Velocity.Lerp(
-                        Math::Vec2F::Zero(), 1.f / 10.f);
-                  }
-                } else {
-                  if (!(other_player_input_ & input::kRight) &&
-                      !(other_player_input_ & input::kLeft) &&
-                      is_player_red_grounded_) {
-                    playerBody.Velocity = playerBody.Velocity.Lerp(
-                        Math::Vec2F::Zero(), 1.f / 10.f);
-                  }
+              } else {
+                if (!(other_player_input_ & input::kRight) &&
+                    !(other_player_input_ & input::kLeft) &&
+                    is_player_blue_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
                 }
               }
-              break;
-            case static_cast<int>(Math::ShapeType::Rectangle):
-              break;
-            default:
-              break;
-          }
+            } else if (col.BodyRef == player_red_body_ref_) {
+              auto& playerBody = world_.GetBody(col.BodyRef);
+
+              if (playerBody.Velocity.X > kMaxSpeed) {
+                playerBody.Velocity.X = kMaxSpeed;
+              } else if (playerBody.Velocity.X < -kMaxSpeed) {
+                playerBody.Velocity.X = -kMaxSpeed;
+              }
+              playerBody.ApplyForce({0, kPlayerGravity});
+
+              // simulate friction with ground
+              if (player_nbr == 1) {
+                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                    is_player_red_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                }
+              } else {
+                if (!(other_player_input_ & input::kRight) &&
+                    !(other_player_input_ & input::kLeft) &&
+                    is_player_red_grounded_) {
+                  playerBody.Velocity =
+                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+                }
+              }
+            }
+            break;
+          case static_cast<int>(Math::ShapeType::Rectangle):
+            break;
+          default:
+            break;
         }
-        timer_.Tick();
-        world_.Update(kFixedDeltaTime);
-        game_frame_++;
-        for (std::size_t i = 0; i < last_frame_input_.size() - 1; ++i) {
-          last_frame_input_[i] = last_frame_input_[i + 1];
-          /*printf("\nframe: %i - %i", last_frame_input_[i].first,
-                 last_frame_input_[i].second);*/
-        }
-        last_frame_input_[last_frame_input_.size() - 1] = {game_frame_, input_};
-        if (game_frame_ >= 5400) {
-          state_ = GameState::kGameFinished;
-        }
-        break;
-      case GameState::kGameFinished:
-        break;
-      default:;
-    }
-    time -= kFixedDeltaTime;
+      }
+      player_blue_shoot_timer_.Tick();
+      world_.Update(metrics::kFixedDeltaTime);
+      break;
+    case GameState::kGameFinished:
+      break;
+    default:;
   }
 }
 
@@ -176,9 +186,6 @@ void Game::StartGame() {
 }
 
 GameState Game::GetState() { return state_; }
-
-void Game::SetInput(input::Input input) { input_ = input; }
-void Game::SetOtherInput(input::Input input) { other_player_input_ = input; }
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
 
@@ -199,6 +206,20 @@ Math::Vec2F Game::GetPlayerRedPos() noexcept {
   return world_.GetBody(player_red_body_ref_).Position;
 }
 
+void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
+  if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
+    can_player_blue_shoot_ = true;
+  }
+}
+
+void Game::OnTriggerExit(ColliderRef col1, ColliderRef col2) noexcept {
+  if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
+    can_player_blue_shoot_ = false;
+  }
+}
+
 void Game::OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
@@ -210,6 +231,20 @@ void Game::OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept {
              (col2 == player_red_col_ref_ && col1 == ground_col_ref_)) {
     is_player_red_grounded_ = true;
   }
+}
+
+int Game::CheckSum() noexcept {
+  const auto p1Pos = world_.GetBody(player_blue_body_ref_).Position;
+  const auto p1Vel = world_.GetBody(player_blue_body_ref_).Velocity;
+
+  const auto p2Pos = world_.GetBody(player_red_body_ref_).Position;
+  const auto p2Vel = world_.GetBody(player_red_body_ref_).Velocity;
+
+  const auto ballPos = world_.GetBody(ball_body_ref_).Position;
+  const auto ballVel = world_.GetBody(ball_body_ref_).Velocity;
+
+  return p1Pos.X + p1Pos.Y + p1Vel.X + p1Vel.Y + p2Pos.X + p2Pos.Y + p2Vel.X +
+         p2Vel.Y + ballPos.X + ballPos.Y + ballVel.X + ballVel.Y;
 }
 
 void Game::CreateBall() noexcept {
@@ -258,6 +293,7 @@ void Game::CreateBall() noexcept {
       break;
   }
   ballCol.Shape = Math::CircleF(Math::Vec2F::Zero(), ball_radius_);
+  ball_col_ref_ = ballColRef;
 }
 
 void Game::CreateTerrain() noexcept {
@@ -398,24 +434,16 @@ void Game::CreatePlayers() noexcept {
   player_blue_col_ref_ = p1ColRef;
 
   // feets
-  // const auto p1FeetsBodyRef = _world.CreateBody();
-  //_body_refs.push_back(p1FeetsBodyRef);
-  // auto& p1FeetsBody = _world.GetBody(p1FeetsBodyRef);
 
-  // p1FeetsBody.Mass = 1;
+  const auto p1FeetsColRef = world_.CreateCollider(p1BodyRef);
+  col_refs_.push_back(p1FeetsColRef);
+  auto& p1FeetsCol = world_.GetCollider(p1FeetsColRef);
+  p1FeetsCol.Shape = Math::CircleF({metrics::kPlayerRadius * 2, 0},
+                                   metrics::kPlayerRadius * 0.5f);
+  p1FeetsCol.IsTrigger = true;
 
-  // p1FeetsBody.Position = {metrics::PlayerBluePos.X,
-  //                         metrics::PlayerBluePos.Y + metrics::FeetHeight};
-
-  // const auto p1FeetsColRef = _world.CreateCollider(p1FeetsBodyRef);
-  //_col_refs.push_back(p1FeetsColRef);
-  // auto& p1FeetsCol = _world.GetCollider(p1FeetsColRef);
-  // p1FeetsCol.Shape =
-  //     Math::RectangleF({-metrics::kPlayerRadius, 0},
-  //                      {metrics::kPlayerRadius, metrics::FeetHeight});
-  // p1FeetsCol.BodyPosition = p1FeetsBody.Position;
-  // p1FeetsCol.Restitution = 0.f;
-  //_player_blue_feet_col_ref = p1FeetsBodyRef;
+  p1FeetsCol.Restitution = 1.f;
+  player_blue_feet_col_ref_ = p1FeetsColRef;
 
   // player red
 

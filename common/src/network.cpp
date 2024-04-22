@@ -2,10 +2,11 @@
 
 Network::Network(const ExitGames::Common::JString& appID,
                  const ExitGames::Common::JString& appVersion, Game* game,
-                 Renderer* renderer)
+                 Renderer* renderer, Rollback* rollback)
     : load_balancing_client_(*this, appID, appVersion),
       game_(game),
-      renderer_(renderer) {}
+      renderer_(renderer),
+      rollback_(rollback) {}
 
 void Network::Connect() {
   // Connect() is asynchronous - the actual result arrives in the
@@ -52,23 +53,35 @@ void Network::ReceiveEvent(int player_nr, PacketType type,
 
   switch (type) {
     case PacketType::kInput: {
-      game_->SetOtherInput(
-          ExitGames::Common::ValueObject<input::Input>(
-              data.getValue(static_cast<nByte>(PacketKey::kInput)))
-              .getDataCopy());
-    } break;
-    case PacketType::kLastFrameInputs:
-      //const auto inputData =
-      //    ExitGames::Common::ValueObject<
-      //        std::array<std::pair<int, input::Input>, 10>>(
-      //        data.getValue(static_cast<nByte>(PacketKey::kLastFrameInputs)))
-      //        .getDataCopy();
-      //for (int i = 0; i < inputData.size(); ++i) {
-      //  printf("\nframe: %i - %i", inputData[i].first, inputData[i].second);
-      //}
+      std::vector<input::FrameInput> frameInputs;
+      const auto input_value =
+          data.getValue(static_cast<nByte>(PacketKey::kInput));
 
-      break;
-    default:;
+      const input::Input* inputs =
+          ExitGames::Common::ValueObject<input::Input*>(input_value)
+              .getDataCopy();
+
+      const int inputs_count =
+          *ExitGames::Common::ValueObject<input::Input*>(input_value)
+               .getSizes();
+
+      const auto frame_value =
+          data.getValue(static_cast<nByte>(PacketKey::kFrame));
+
+      const short* frames =
+          ExitGames::Common::ValueObject<short*>(frame_value).getDataCopy();
+
+      for (int i = 0; i < inputs_count; i++) {
+        input::FrameInput frame_input{inputs[i], frames[i]};
+        frameInputs.push_back(frame_input);
+      }
+
+      rollback_->SetRemotePlayerInput(frameInputs, player_nr - 1);
+      rollback_->ConfirmFrame();
+
+      ExitGames::Common::MemoryManagement::deallocateArray(inputs);
+      ExitGames::Common::MemoryManagement::deallocateArray(frames);
+    } break;
   }
 }
 
@@ -98,10 +111,11 @@ void Network::joinRoomEventAction(
     int playerNr, const ExitGames::Common::JVector<int>& playernrs,
     const ExitGames::LoadBalancing::Player& player) {
   if (game_->player_nbr == -1) {
-    game_->player_nbr = playerNr;
+    game_->player_nbr = playerNr - 1;
   }
   if (playerNr == 2) {
     game_->StartGame();
+    rollback_->RegisterGame(game_);
     renderer_->StartGame();
   }
 
