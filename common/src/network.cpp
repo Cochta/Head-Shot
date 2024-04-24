@@ -76,8 +76,8 @@ void Network::ReceiveEvent(int player_nr, PacketType type,
         frameInputs.push_back(frame_input);
       }
 
-      rollback_->SetRemotePlayerInput(frameInputs, player_nr - 1);
-      rollback_->ConfirmFrame();
+      rollback_->SetOtherPlayerInput(frameInputs, player_nr - 1);
+      // rollback_->ConfirmFrame();
 
       ExitGames::Common::MemoryManagement::deallocateArray(inputs);
       ExitGames::Common::MemoryManagement::deallocateArray(frames);

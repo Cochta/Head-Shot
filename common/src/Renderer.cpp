@@ -136,7 +136,7 @@ void Renderer::DrawMenu() {
           isWaitingOtherPlayer = true;
           network_->JoinRandomOrCreateRoom();
 
-          //for test
+          // for test
           /*game_->StartGame();
           StartGame();*/
         }
@@ -206,11 +206,11 @@ void Renderer::DrawPlayers() {
 
   player_red_left_feet_.Draw(
       {playerRedPos.X, playerRedPos.Y + metrics::kPlayerRadius +
-                            player_red_left_feet_.dest.height * 0.5f});
+                           player_red_left_feet_.dest.height * 0.5f});
 
   player_red_right_feet_.Draw(
       {playerRedPos.X, playerRedPos.Y + metrics::kPlayerRadius +
-                            player_red_right_feet_.dest.height * 0.5f});
+                           player_red_right_feet_.dest.height * 0.5f});
 }
 
 void Renderer::DrawTerrain() {

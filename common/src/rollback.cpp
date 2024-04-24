@@ -1,12 +1,11 @@
 #include "rollback.h"
 
- void Rollback::SetLocalPlayerInput(input::FrameInput frame_input,
-                                           int player_id) {
-   inputs_[player_id][frame_input.frame_nbr] = frame_input.input;
-   current_frame_ = frame_input.frame_nbr;
- }
+void Rollback::SetPlayerInput(input::FrameInput frame_input, int player_id) {
+  inputs_[player_id][frame_input.frame_nbr] = frame_input.input;
+  current_frame_ = frame_input.frame_nbr;
+}
 
-void Rollback::SetRemotePlayerInput(
+void Rollback::SetOtherPlayerInput(
     const std::vector<input::FrameInput>& frame_inputs, int player_id) {
   auto last_remote_frame_input = frame_inputs.back();
   const auto frame_diff =
@@ -56,46 +55,42 @@ void Rollback::SetRemotePlayerInput(
     inputs_[player_id][frame] = last_remote_frame_input.input;
   }
 
-  SimulateUntilCurrentFrame();
+  DoRollback();
 
   last_remote_input_frame_ = last_remote_frame_input.frame_nbr;
 }
 
-void Rollback::SimulateUntilCurrentFrame() noexcept {
-  *current_game_ = confirmed_game_;
+void Rollback::DoRollback() noexcept {
+  *current_ = confirmed_;
 
   for (short frame = static_cast<short>(confirmed_frame_ + 1);
        frame < current_frame_; frame++) {
-
-    current_game_->FixedUpdate(frame);
+    current_->FixedUpdate(frame);
   }
-
-  // The Fixed update of the current frame is made in the main loop after
-  // polling received events from network.
 }
 
-int Rollback::ComputeFrameToConfirmChecksum() noexcept {
-  game_to_confirm_ = confirmed_game_;
+int Rollback::ConfirmChecksum() noexcept {
+  to_confirm_ = confirmed_;
+
+    //todo: checksum from current and confirm
 
   for (int frame = confirmed_frame_ + 1; frame <= frame_to_confirm_; frame++) {
-
-    game_to_confirm_.FixedUpdate(frame);
+    to_confirm_.FixedUpdate(frame);
   }
 
-  return game_to_confirm_.CheckSum();
+  return to_confirm_.CheckSum();
 }
 
 void Rollback::ConfirmFrame() noexcept {
   for (int frame = confirmed_frame_ + 1; frame <= frame_to_confirm_; frame++) {
-
-    confirmed_game_.FixedUpdate(frame);
+    confirmed_.FixedUpdate(frame);
   }
 
   confirmed_frame_++;
   frame_to_confirm_++;
 }
 
-input::Input Rollback::GetPlayerInputAtFrame(
-    int player_id, short frame_nbr) const noexcept {
+input::Input Rollback::GetPlayerInputAtFrame(int player_id,
+                                             short frame_nbr) const noexcept {
   return inputs_[player_id][frame_nbr];
 }

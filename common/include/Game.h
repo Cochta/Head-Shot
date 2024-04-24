@@ -51,6 +51,13 @@ class Game : public ContactListener {
 
   ColliderRef player_red_col_ref_{};
 
+  ColliderRef player_red_feet_col_ref_;
+
+  Timer player_red_shoot_timer_;
+  float player_red_shoot_time_ = 1.f;
+
+  bool can_player_red_shoot_ = false;
+
   BallType ball_type_ = BallType::kFootball;
   BodyRef ball_body_ref_{};
   ColliderRef ball_col_ref_{};

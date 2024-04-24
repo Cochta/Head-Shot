@@ -5,7 +5,6 @@
 #include <string>
 
 #include "Game.h"
-#include "GameData.h"
 #include "Image2D.h"
 #include "Timer.h"
 

@@ -28,6 +28,6 @@ constexpr Math::Vec2F kGroundSize{kWindowWidth / 7.f, kWindowHeight / 5.f};
 constexpr Math::Vec2F kGoalSize = {MetersToPixels(0.6f), kWindowHeight / 3.f};
 constexpr float kPlayerRadius = MetersToPixels(0.5f);
 
-static constexpr float kFixedDeltaTime = 1.f / kFPS;
+constexpr float kFixedDeltaTime = 1.f / kFPS;
 
 }  // namespace metrics

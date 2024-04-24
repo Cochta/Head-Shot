@@ -59,7 +59,7 @@ void Application::Run() {
 
           //------------------------------------------
           const input::FrameInput frame_input{input, game_frame_};
-          rollback_.SetLocalPlayerInput(frame_input, game_.player_nbr);
+          rollback_.SetPlayerInput(frame_input, game_.player_nbr);
 
           inputs_.push_back(input);
           frames_.push_back(game_frame_);
@@ -72,9 +72,12 @@ void Application::Run() {
 
           network_.RaiseEvent(false, PacketType::kInput, event_data);
 
-          if (inputs_.size() >= 150) {
+          if (inputs_.size() >= 60) {//todo: erase all before confirm frame
+            //confirm frame check if all inputs are recieved -> update once -> compare checksum both
+            //frame packet reliable
             inputs_.erase(inputs_.begin());
             frames_.erase(frames_.begin());
+            //rollback_.ConfirmFrame();
           }
           //------------------------------------------
 

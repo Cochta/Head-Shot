@@ -11,6 +11,9 @@
 Game::Game(Rollback* rollback) : rollback_(rollback) {}
 
 void Game::ProcessInput() noexcept {
+#ifdef TRACY_ENABLE
+  ZoneScoped;
+#endif
   if (player_nbr == 0) {
     if (input_ & input::kRight) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
@@ -37,6 +40,11 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_red_grounded_ = false;
     }
+    if ((other_player_input_ & input::kKick) && can_player_red_shoot_ &&
+        player_red_shoot_time_ >= 1.0f) {
+      world_.GetBody(ball_body_ref_).ApplyForce({-kShootForce, -kShootForce});
+      player_red_shoot_time_ = 0.f;
+    }
   } else {
     if (input_ & input::kRight) {
       world_.GetBody(player_red_body_ref_).ApplyForce({kWalkSpeed, 0});
@@ -48,6 +56,11 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_red_grounded_ = false;
     }
+    if ((input_ & input::kKick) && can_player_red_shoot_ &&
+        player_red_shoot_time_ >= 1.0f) {
+      world_.GetBody(ball_body_ref_).ApplyForce({-kShootForce, -kShootForce});
+      player_red_shoot_time_ = 0.f;
+    }
     if (other_player_input_ & input::kRight) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
     }
@@ -57,6 +70,11 @@ void Game::ProcessInput() noexcept {
     if ((other_player_input_ & input::kJump) && is_player_blue_grounded_) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_blue_grounded_ = false;
+    }
+    if ((other_player_input_ & input::kKick) && can_player_blue_shoot_ &&
+        player_blue_shoot_time_ >= 1.0f) {
+      world_.GetBody(ball_body_ref_).ApplyForce({kShootForce, -kShootForce});
+      player_blue_shoot_time_ = 0.f;
     }
   }
 }
@@ -68,6 +86,7 @@ void Game::Setup() noexcept {
   CreateTerrain();
   CreatePlayers();
   player_blue_shoot_timer_.SetUp();
+  player_red_shoot_timer_.SetUp();
 }
 
 void Game::Update(float deltaTime) noexcept {
@@ -91,6 +110,7 @@ void Game::FixedUpdate(short frame_nbr) {
       break;
     case GameState::kInGame:
       player_blue_shoot_time_ += player_blue_shoot_timer_.DeltaTime;
+      player_red_shoot_time_ += player_red_shoot_timer_.DeltaTime;
       input_ = rollback_->GetPlayerInputAtFrame(player_nbr, frame_nbr);
       other_player_input_ =
           rollback_->GetPlayerInputAtFrame(player_nbr == 0 ? 1 : 0, frame_nbr);
@@ -166,11 +186,13 @@ void Game::FixedUpdate(short frame_nbr) {
         }
       }
       player_blue_shoot_timer_.Tick();
+      player_red_shoot_timer_.Tick();
       world_.Update(metrics::kFixedDeltaTime);
       break;
     case GameState::kGameFinished:
       break;
-    default:;
+    default:
+      break;
   }
 }
 
@@ -211,12 +233,20 @@ void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
       (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
     can_player_blue_shoot_ = true;
   }
+  if ((col1 == player_red_feet_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == player_red_feet_col_ref_ && col1 == ball_col_ref_)) {
+    can_player_red_shoot_ = true;
+  }
 }
 
 void Game::OnTriggerExit(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
     can_player_blue_shoot_ = false;
+  }
+  if ((col1 == player_red_feet_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == player_red_feet_col_ref_ && col1 == ball_col_ref_)) {
+    can_player_red_shoot_ = false;
   }
 }
 
@@ -234,17 +264,23 @@ void Game::OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept {
 }
 
 int Game::CheckSum() noexcept {
-  const auto p1Pos = world_.GetBody(player_blue_body_ref_).Position;
-  const auto p1Vel = world_.GetBody(player_blue_body_ref_).Velocity;
+  auto p1Pos = world_.GetBody(player_blue_body_ref_).Position;
+  auto p1Vel = world_.GetBody(player_blue_body_ref_).Velocity;
 
-  const auto p2Pos = world_.GetBody(player_red_body_ref_).Position;
-  const auto p2Vel = world_.GetBody(player_red_body_ref_).Velocity;
+  auto p2Pos = world_.GetBody(player_red_body_ref_).Position;
+  auto p2Vel = world_.GetBody(player_red_body_ref_).Velocity;
 
-  const auto ballPos = world_.GetBody(ball_body_ref_).Position;
-  const auto ballVel = world_.GetBody(ball_body_ref_).Velocity;
+  auto ballPos = world_.GetBody(ball_body_ref_).Position;
+  auto ballVel = world_.GetBody(ball_body_ref_).Velocity;
 
-  return p1Pos.X + p1Pos.Y + p1Vel.X + p1Vel.Y + p2Pos.X + p2Pos.Y + p2Vel.X +
-         p2Vel.Y + ballPos.X + ballPos.Y + ballVel.X + ballVel.Y;
+  return *reinterpret_cast<int*>(&p1Pos.X) + *reinterpret_cast<int*>(&p1Pos.Y) +
+         *reinterpret_cast<int*>(&p1Vel.X) + *reinterpret_cast<int*>(&p1Vel.Y) +
+         *reinterpret_cast<int*>(&p2Pos.X) + *reinterpret_cast<int*>(&p2Pos.Y) +
+         *reinterpret_cast<int*>(&p2Vel.X) + *reinterpret_cast<int*>(&p2Vel.Y) +
+         *reinterpret_cast<int*>(&ballPos.X) +
+         *reinterpret_cast<int*>(&ballPos.Y) +
+         *reinterpret_cast<int*>(&ballVel.X) +
+         *reinterpret_cast<int*>(&ballVel.Y);
 }
 
 void Game::CreateBall() noexcept {
@@ -464,4 +500,16 @@ void Game::CreatePlayers() noexcept {
   p2Col.Restitution = 0.f;
   player_red_body_ref_ = p2BodyRef;
   player_red_col_ref_ = p2ColRef;
+
+  // feets
+
+  const auto p2FeetsColRef = world_.CreateCollider(p2BodyRef);
+  col_refs_.push_back(p2FeetsColRef);
+  auto& p2FeetsCol = world_.GetCollider(p2FeetsColRef);
+  p2FeetsCol.Shape = Math::CircleF({-metrics::kPlayerRadius * 2, 0},
+                                   metrics::kPlayerRadius * 0.5f);
+  p2FeetsCol.IsTrigger = true;
+
+  p2FeetsCol.Restitution = 1.f;
+  player_red_feet_col_ref_ = p2FeetsColRef;
 }

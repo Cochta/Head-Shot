@@ -3,6 +3,8 @@ project(rollback_game)
 
 set(CMAKE_CXX_STANDARD 17)
 
+add_definitions(-DWIN32_LEAN_AND_MEAN)
+
 option(BUILD_WEB "build for web" OFF)
 
 option(USE_TRACY "Use Tracy Profiler" OFF)
