@@ -101,9 +101,8 @@ class Game : public ContactListener {
   Math::Vec2F GetPlayerBluePos() noexcept;
   Math::Vec2F GetPlayerRedPos() noexcept;
 
-  std::array<std::pair<int, input::Input>, 10> GetLastFrameInputs() noexcept {
-    return last_frame_input_;
-  }
+  void SetPlayerInput(input::Input input) noexcept;
+  void SetOtherPlayerInput(input::Input input) noexcept;
 
   void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 

@@ -111,9 +111,7 @@ void Game::FixedUpdate(short frame_nbr) {
     case GameState::kInGame:
       player_blue_shoot_time_ += player_blue_shoot_timer_.DeltaTime;
       player_red_shoot_time_ += player_red_shoot_timer_.DeltaTime;
-      input_ = rollback_->GetPlayerInputAtFrame(player_nbr, frame_nbr);
-      other_player_input_ =
-          rollback_->GetPlayerInputAtFrame(player_nbr == 0 ? 1 : 0, frame_nbr);
+
       ProcessInput();
 
       for (std::size_t i = 0; i < col_refs_.size(); ++i) {
@@ -226,6 +224,12 @@ Math::Vec2F Game::GetPlayerBluePos() noexcept {
 }
 Math::Vec2F Game::GetPlayerRedPos() noexcept {
   return world_.GetBody(player_red_body_ref_).Position;
+}
+
+void Game::SetPlayerInput(input::Input input) noexcept { input_ = input; }
+
+void Game::SetOtherPlayerInput(input::Input input) noexcept {
+  other_player_input_ = input;
 }
 
 void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {

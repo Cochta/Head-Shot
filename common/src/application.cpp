@@ -72,14 +72,23 @@ void Application::Run() {
 
           network_.RaiseEvent(false, PacketType::kInput, event_data);
 
-          if (inputs_.size() >= 60) {//todo: erase all before confirm frame
-            //confirm frame check if all inputs are recieved -> update once -> compare checksum both
-            //frame packet reliable
+          if (inputs_.size() >= 60) {  // todo: erase all before confirm frame
+            // confirm frame check if all inputs are recieved -> update once ->
+            // compare checksum both frame packet reliable
             inputs_.erase(inputs_.begin());
             frames_.erase(frames_.begin());
-            //rollback_.ConfirmFrame();
+            // rollback_.ConfirmFrame();
           }
           //------------------------------------------
+
+          for (size_t i = 0; i < 2; i++) {
+            const auto input = rollback_.GetLastPlayerInput(i);
+            if (i == game_.player_nbr) {
+              game_.SetPlayerInput(input);
+            } else {
+              game_.SetOtherPlayerInput(input);
+            }
+          }
 
           game_.Update(game_timer_.DeltaTime);
 

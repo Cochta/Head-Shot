@@ -1,6 +1,8 @@
 #include "rollback.h"
 
 void Rollback::SetPlayerInput(input::FrameInput frame_input, int player_id) {
+  last_inputs_[player_id] = frame_input.input;
+
   inputs_[player_id][frame_input.frame_nbr] = frame_input.input;
   current_frame_ = frame_input.frame_nbr;
 }
@@ -58,6 +60,7 @@ void Rollback::SetOtherPlayerInput(
   DoRollback();
 
   last_remote_input_frame_ = last_remote_frame_input.frame_nbr;
+  last_inputs_[player_id] = last_remote_frame_input.input;
 }
 
 void Rollback::DoRollback() noexcept {
@@ -65,32 +68,38 @@ void Rollback::DoRollback() noexcept {
 
   for (short frame = static_cast<short>(confirmed_frame_ + 1);
        frame < current_frame_; frame++) {
+    for (size_t i = 0; i < 2; i++) {
+      const auto input = inputs_[i][frame];
+      if (i == current_->player_nbr) {
+        current_->SetPlayerInput(input);
+      } else {
+        current_->SetOtherPlayerInput(input);
+      }
+    }
     current_->FixedUpdate(frame);
   }
 }
 
-int Rollback::ConfirmChecksum() noexcept {
-  to_confirm_ = confirmed_;
-
-    //todo: checksum from current and confirm
-
+int Rollback::ConfirmFrame() noexcept {
   for (int frame = confirmed_frame_ + 1; frame <= frame_to_confirm_; frame++) {
-    to_confirm_.FixedUpdate(frame);
-  }
-
-  return to_confirm_.CheckSum();
-}
-
-void Rollback::ConfirmFrame() noexcept {
-  for (int frame = confirmed_frame_ + 1; frame <= frame_to_confirm_; frame++) {
+    for (size_t i = 0; i < 2; i++) {
+      const auto input = inputs_[i][frame];
+      if (i == current_->player_nbr) {
+        current_->SetPlayerInput(input);
+      } else {
+        current_->SetOtherPlayerInput(input);
+      }
+    }
     confirmed_.FixedUpdate(frame);
   }
 
   confirmed_frame_++;
   frame_to_confirm_++;
+
+  return confirmed_.CheckSum();
 }
 
-input::Input Rollback::GetPlayerInputAtFrame(int player_id,
-                                             short frame_nbr) const noexcept {
-  return inputs_[player_id][frame_nbr];
+const input::Input& Rollback::GetLastPlayerInput(
+    const int player_id) const noexcept {
+  return last_inputs_[player_id];
 }
