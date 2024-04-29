@@ -12,19 +12,21 @@ class Rollback {
     confirmed_ = *game;
   }
 
-  void SetPlayerInput(input::FrameInput frame_input, int player_id);
+  void SetPlayerInput(const input::FrameInput &frame_input, int player_id);
   void SetOtherPlayerInput(const std::vector<input::FrameInput>& frame_inputs,
                            int player_id);
 
-  void DoRollback() noexcept;
+  void DoRollback() const noexcept;
 
   int ConfirmFrame() noexcept;
 
-  const input::Input& GetLastPlayerInput(
-      const int player_id) const noexcept;
+  const input::Input& GetLastPlayerInput(const int player_id) const noexcept;
 
   [[nodiscard]] short GetConfirmedFrame() const noexcept {
     return confirmed_frame_;
+  }
+  [[nodiscard]] short GetCurentFrame() const noexcept {
+    return current_frame_;
   }
 
   [[nodiscard]] short GetLastRemoteInputFrame() const noexcept {
@@ -34,6 +36,8 @@ class Rollback {
   [[nodiscard]] short GetFrameToConfirm() const noexcept {
     return frame_to_confirm_;
   }
+
+  void IncreaseCurrentFrame() noexcept { current_frame_++; }
 
  private:
   Game* current_ = nullptr;

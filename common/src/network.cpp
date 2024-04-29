@@ -1,12 +1,15 @@
 #include "network.h"
 
+#include "application.h"
+
 Network::Network(const ExitGames::Common::JString& appID,
                  const ExitGames::Common::JString& appVersion, Game* game,
-                 Renderer* renderer, Rollback* rollback)
+                 Renderer* renderer, Rollback* rollback, Application* app)
     : load_balancing_client_(*this, appID, appVersion),
       game_(game),
       renderer_(renderer),
-      rollback_(rollback) {}
+      rollback_(rollback),
+      app_(app) {}
 
 void Network::Connect() {
   // Connect() is asynchronous - the actual result arrives in the
@@ -48,41 +51,7 @@ void Network::ReceiveEvent(int player_nr, PacketType type,
         L"just arrived: %ls",
         static_cast<nByte>(type), player_nr, data.toString(true).cstr());
 
-  // std::cout << "event content: " <<
-  // data.toString().UTF8Representation().cstr() << '\n';
-
-  switch (type) {
-    case PacketType::kInput: {
-      std::vector<input::FrameInput> frameInputs;
-      const auto input_value =
-          data.getValue(static_cast<nByte>(PacketKey::kInput));
-
-      const input::Input* inputs =
-          ExitGames::Common::ValueObject<input::Input*>(input_value)
-              .getDataCopy();
-
-      const int inputs_count =
-          *ExitGames::Common::ValueObject<input::Input*>(input_value)
-               .getSizes();
-
-      const auto frame_value =
-          data.getValue(static_cast<nByte>(PacketKey::kFrame));
-
-      const short* frames =
-          ExitGames::Common::ValueObject<short*>(frame_value).getDataCopy();
-
-      for (int i = 0; i < inputs_count; i++) {
-        input::FrameInput frame_input{inputs[i], frames[i]};
-        frameInputs.push_back(frame_input);
-      }
-
-      rollback_->SetOtherPlayerInput(frameInputs, player_nr - 1);
-      // rollback_->ConfirmFrame();
-
-      ExitGames::Common::MemoryManagement::deallocateArray(inputs);
-      ExitGames::Common::MemoryManagement::deallocateArray(frames);
-    } break;
-  }
+  app_->packet_queue.push({type, data});
 }
 
 void Network::debugReturn(int debugLevel,

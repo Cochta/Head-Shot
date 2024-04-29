@@ -7,12 +7,14 @@
 #include "Renderer.h"
 #include "packet.h"
 
+class Application;
+
 class Network final : public ExitGames::LoadBalancing::Listener {
  public:
   // network funcs
   Network(const ExitGames::Common::JString& appID,
           const ExitGames::Common::JString& appVersion, Game* game,
-          Renderer* renderer, Rollback* rollback);
+          Renderer* renderer, Rollback* rollback, Application* app);
   void Connect();
   void Disconnect();
   void Service();
@@ -63,6 +65,7 @@ class Network final : public ExitGames::LoadBalancing::Listener {
   ExitGames::LoadBalancing::Client load_balancing_client_;
   ExitGames::Common::Logger
       mLogger;  // name must be mLogger because it is accessed by EGLOG()
+  Application* app_;
   Game* game_;
   Renderer* renderer_;
   Rollback* rollback_;

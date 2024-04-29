@@ -89,18 +89,18 @@ void Game::Setup() noexcept {
   player_red_shoot_timer_.SetUp();
 }
 
-void Game::Update(float deltaTime) noexcept {
+void Game::Update() noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
   game_frame_++;
-  FixedUpdate(game_frame_);
+  FixedUpdate();
   if (game_frame_ >= 5400) {
     state_ = GameState::kGameFinished;
   }
 }
 
-void Game::FixedUpdate(short frame_nbr) {
+void Game::FixedUpdate() {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
@@ -109,6 +109,9 @@ void Game::FixedUpdate(short frame_nbr) {
     case GameState::kMenu:
       break;
     case GameState::kInGame:
+      player_blue_shoot_timer_.Tick();
+      player_red_shoot_timer_.Tick();
+      world_.Update(metrics::kFixedDeltaTime);
       player_blue_shoot_time_ += player_blue_shoot_timer_.DeltaTime;
       player_red_shoot_time_ += player_red_shoot_timer_.DeltaTime;
 
@@ -183,9 +186,6 @@ void Game::FixedUpdate(short frame_nbr) {
             break;
         }
       }
-      player_blue_shoot_timer_.Tick();
-      player_red_shoot_timer_.Tick();
-      world_.Update(metrics::kFixedDeltaTime);
       break;
     case GameState::kGameFinished:
       break;
@@ -206,6 +206,19 @@ void Game::StartGame() {
 }
 
 GameState Game::GetState() { return state_; }
+
+void Game::Copy(const Game& other) {
+  world_ = other.world_;
+  input_ = other.input_;
+  other_player_input_ = other.other_player_input_;
+
+  player_blue_shoot_time_ = other.player_blue_shoot_time_;
+  can_player_blue_shoot_ = other.can_player_blue_shoot_;
+  player_red_shoot_time_ = other.player_red_shoot_time_;
+  can_player_red_shoot_ = other.can_player_red_shoot_;
+  is_player_blue_grounded_ = other.is_player_blue_grounded_;
+  is_player_red_grounded_ = other.is_player_red_grounded_;
+}
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
 

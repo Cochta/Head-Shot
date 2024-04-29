@@ -82,11 +82,13 @@ class Game : public ContactListener {
   int player_nbr = -1;
   Game(Rollback* rollback);
 
+  void Copy(const Game &other);
+
   void ProcessInput() noexcept;
 
   void Setup() noexcept;
-  void Update(float deltaTime) noexcept;
-  void FixedUpdate(short frame_nbr);
+  void Update() noexcept;
+  void FixedUpdate();
   void TearDown() noexcept;
 
   void StartGame();
