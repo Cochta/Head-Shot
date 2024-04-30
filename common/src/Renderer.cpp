@@ -55,6 +55,7 @@ void Renderer::Draw(void) {
       case GameState::kInGame:
       case GameState::kGameFinished:
         DrawBall();
+        DrawScore();
         DrawPlayers();
         DrawTimer();
         break;
@@ -135,10 +136,6 @@ void Renderer::DrawMenu() {
         if (raylib::IsMouseButtonPressed(0)) {
           isWaitingOtherPlayer = true;
           network_->JoinRandomOrCreateRoom();
-
-          // for test
-          /*game_->StartGame();
-          StartGame();*/
         }
       }
     }
@@ -150,6 +147,24 @@ void Renderer::DrawMenu() {
                          metrics::kWindowWidth * 0.5f -
                              raylib::MeasureText(text, kFontSize) * 0.5f,
                          metrics::kWindowHeight * 0.2f + 30, 30, raylib::BLACK);
+}
+
+void Renderer::DrawScore() {
+  raylib::DrawRaylibText(
+      std::to_string(game_->GetBlueScore()).c_str(),
+      metrics::kWindowWidth * 0.33f -
+          raylib::MeasureText(std::to_string(game_->GetBlueScore()).c_str(),
+                              100) *
+              0.5f,
+      metrics::kWindowHeight * 0.33f, 100, raylib::BLUE);
+
+  raylib::DrawRaylibText(
+      std::to_string(game_->GetRedScore()).c_str(),
+      metrics::kWindowWidth * 0.66f -
+          raylib::MeasureText(std::to_string(game_->GetRedScore()).c_str(),
+                              100) *
+              0.5f,
+      metrics::kWindowHeight * 0.33f, 100, raylib::RED);
 }
 
 void Renderer::DrawTimer() {

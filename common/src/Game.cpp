@@ -85,8 +85,6 @@ void Game::Setup() noexcept {
   CreateBall();
   CreateTerrain();
   CreatePlayers();
-  player_blue_shoot_timer_.SetUp();
-  player_red_shoot_timer_.SetUp();
 }
 
 void Game::Update() noexcept {
@@ -105,11 +103,9 @@ void Game::FixedUpdate() {
     case GameState::kMenu:
       break;
     case GameState::kInGame:
-      player_blue_shoot_timer_.Tick();
-      player_red_shoot_timer_.Tick();
       world_.Update(metrics::kFixedDeltaTime);
-      player_blue_shoot_time_ += player_blue_shoot_timer_.DeltaTime;
-      player_red_shoot_time_ += player_red_shoot_timer_.DeltaTime;
+      player_blue_shoot_time_ += metrics::kFixedDeltaTime;
+      player_red_shoot_time_ += metrics::kFixedDeltaTime;
 
       ProcessInput();
 
@@ -118,68 +114,60 @@ void Game::FixedUpdate() {
 
         const auto& shape = world_.GetCollider(col_refs_[i]).Shape;
 
-        switch (shape.index()) {
-          case static_cast<int>(Math::ShapeType::Circle):
-            if (col.BodyRef == ball_body_ref_) {
-              auto& ballBody = world_.GetBody(col.BodyRef);
-              ballBody.ApplyForce({0, kBallGravity});
+        if (col.BodyRef == ball_body_ref_) {
+          auto& ballBody = world_.GetBody(col.BodyRef);
+          ballBody.ApplyForce({0, kBallGravity});
 
-            } else if (col.BodyRef == player_blue_body_ref_) {
-              auto& playerBody = world_.GetBody(col.BodyRef);
+        } else if (col.BodyRef == player_blue_body_ref_) {
+          auto& playerBody = world_.GetBody(col.BodyRef);
 
-              if (playerBody.Velocity.X > kMaxSpeed) {
-                playerBody.Velocity.X = kMaxSpeed;
-              } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                playerBody.Velocity.X = -kMaxSpeed;
-              }
-              playerBody.ApplyForce({0, kPlayerGravity});
+          if (playerBody.Velocity.X > kMaxSpeed) {
+            playerBody.Velocity.X = kMaxSpeed;
+          } else if (playerBody.Velocity.X < -kMaxSpeed) {
+            playerBody.Velocity.X = -kMaxSpeed;
+          }
+          playerBody.ApplyForce({0, kPlayerGravity});
 
-              // simulate friction with fground
-              if (player_nbr == 0) {
-                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                    is_player_blue_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-                }
-              } else {
-                if (!(other_player_input_ & input::kRight) &&
-                    !(other_player_input_ & input::kLeft) &&
-                    is_player_blue_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-                }
-              }
-            } else if (col.BodyRef == player_red_body_ref_) {
-              auto& playerBody = world_.GetBody(col.BodyRef);
-
-              if (playerBody.Velocity.X > kMaxSpeed) {
-                playerBody.Velocity.X = kMaxSpeed;
-              } else if (playerBody.Velocity.X < -kMaxSpeed) {
-                playerBody.Velocity.X = -kMaxSpeed;
-              }
-              playerBody.ApplyForce({0, kPlayerGravity});
-
-              // simulate friction with ground
-              if (player_nbr == 1) {
-                if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
-                    is_player_red_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-                }
-              } else {
-                if (!(other_player_input_ & input::kRight) &&
-                    !(other_player_input_ & input::kLeft) &&
-                    is_player_red_grounded_) {
-                  playerBody.Velocity =
-                      playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
-                }
-              }
+          // simulate friction with fground
+          if (player_nbr == 0) {
+            if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                is_player_blue_grounded_) {
+              playerBody.Velocity =
+                  playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
             }
-            break;
-          case static_cast<int>(Math::ShapeType::Rectangle):
-            break;
-          default:
-            break;
+          } else {
+            if (!(other_player_input_ & input::kRight) &&
+                !(other_player_input_ & input::kLeft) &&
+                is_player_blue_grounded_) {
+              playerBody.Velocity =
+                  playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+            }
+          }
+        } else if (col.BodyRef == player_red_body_ref_) {
+          auto& playerBody = world_.GetBody(col.BodyRef);
+
+          if (playerBody.Velocity.X > kMaxSpeed) {
+            playerBody.Velocity.X = kMaxSpeed;
+          } else if (playerBody.Velocity.X < -kMaxSpeed) {
+            playerBody.Velocity.X = -kMaxSpeed;
+          }
+          playerBody.ApplyForce({0, kPlayerGravity});
+
+          // simulate friction with ground
+          if (player_nbr == 1) {
+            if (!(input_ & input::kRight) && !(input_ & input::kLeft) &&
+                is_player_red_grounded_) {
+              playerBody.Velocity =
+                  playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+            }
+          } else {
+            if (!(other_player_input_ & input::kRight) &&
+                !(other_player_input_ & input::kLeft) &&
+                is_player_red_grounded_) {
+              playerBody.Velocity =
+                  playerBody.Velocity.Lerp(Math::Vec2F::Zero(), 1.f / 10.f);
+            }
+          }
         }
       }
       break;
@@ -215,9 +203,6 @@ void Game::Copy(const Game& other) {
   can_player_red_shoot_ = other.can_player_red_shoot_;
   is_player_blue_grounded_ = other.is_player_blue_grounded_;
   is_player_red_grounded_ = other.is_player_red_grounded_;
-
-  player_blue_shoot_timer_ = other.player_blue_shoot_timer_;
-  player_red_shoot_timer_ = other.player_red_shoot_timer_;
 }
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
@@ -255,6 +240,16 @@ void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_red_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_red_feet_col_ref_ && col1 == ball_col_ref_)) {
     can_player_red_shoot_ = true;
+  }
+  if ((col1 == left_goal_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == left_goal_col_ref_ && col1 == ball_col_ref_)) {
+    red_score_ += 1;
+    ResetPositions();
+  }
+  if ((col1 == right_goal_col_ref_ && col2 == ball_col_ref_) ||
+      (col2 == right_goal_col_ref_ && col1 == ball_col_ref_)) {
+    blue_score_ += 1;
+    ResetPositions();
   }
 }
 
@@ -303,8 +298,8 @@ int Game::CheckSum() noexcept {
 }
 
 void Game::CreateBall() noexcept {
-  ball_type_ =
-      BallType::kBasketball;  // static_cast<BallType>( GetRandomValue(0,
+  /*ball_type_ =
+      BallType::kFootball;*/  // static_cast<BallType>( GetRandomValue(0,
                               // static_cast<int>(BallType::kCount) - 1));
 
   const auto ballBodyRef = world_.CreateBody();
@@ -434,16 +429,30 @@ void Game::CreateTerrain() noexcept {
   leftGoalBody.Position = {0, metrics::kWindowHeight - metrics::kGroundSize.Y -
                                   metrics::kGoalSize.Y};
 
+  const auto leftGoalColRefRoof = world_.CreateCollider(leftGoalRef);
+  col_refs_.push_back(leftGoalColRefRoof);
+  auto& leftGoalColRoof = world_.GetCollider(leftGoalColRefRoof);
+
+  leftGoalColRoof.Shape =
+      Math::RectangleF({-metrics::kGoalSize.X, 0},
+                       {metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f});
+
+  leftGoalColRoof.BodyPosition = leftGoalBody.Position;
+  leftGoalColRoof.Restitution = 0.f;
+
   const auto leftGoalColRef = world_.CreateCollider(leftGoalRef);
   col_refs_.push_back(leftGoalColRef);
   auto& leftGoalCol = world_.GetCollider(leftGoalColRef);
 
-  leftGoalCol.Shape =
-      Math::RectangleF({-metrics::kGoalSize.X, 0},
-                       {metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f});
+  leftGoalCol.IsTrigger = true;
+
+  leftGoalCol.Shape = Math::RectangleF(
+      {0, 0}, {metrics::kGoalSize.X / 10.f, metrics::kGoalSize.Y});
 
   leftGoalCol.BodyPosition = leftGoalBody.Position;
   leftGoalCol.Restitution = 0.f;
+
+  left_goal_col_ref_ = leftGoalColRef;
 
   // goal right
   const auto rightGoalRef = world_.CreateBody();
@@ -456,16 +465,30 @@ void Game::CreateTerrain() noexcept {
       metrics::kWindowWidth,
       metrics::kWindowHeight - metrics::kGroundSize.Y - metrics::kGoalSize.Y};
 
+  const auto rightGoalColRefRoof = world_.CreateCollider(rightGoalRef);
+  col_refs_.push_back(rightGoalColRefRoof);
+  auto& rightGoalColRoof = world_.GetCollider(rightGoalColRefRoof);
+
+  rightGoalColRoof.Shape =
+      Math::RectangleF({-metrics::kGoalSize.X, 0},
+                       {metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f});
+
+  rightGoalColRoof.BodyPosition = rightGoalBody.Position;
+  rightGoalColRoof.Restitution = 0.f;
+
   const auto rightGoalColRef = world_.CreateCollider(rightGoalRef);
   col_refs_.push_back(rightGoalColRef);
   auto& rightGoalCol = world_.GetCollider(rightGoalColRef);
 
-  rightGoalCol.Shape =
-      Math::RectangleF({-metrics::kGoalSize.X, 0},
-                       {metrics::kGoalSize.X, metrics::kGoalSize.Y / 10.f});
+  rightGoalCol.IsTrigger = true;
+
+  rightGoalCol.Shape = Math::RectangleF(
+      {0, 0}, {metrics::kGoalSize.X / 10.f, metrics::kGoalSize.Y});
 
   rightGoalCol.BodyPosition = rightGoalBody.Position;
   rightGoalCol.Restitution = 0.f;
+
+  right_goal_col_ref_ = rightGoalColRef;
 }
 
 void Game::CreatePlayers() noexcept {
@@ -531,4 +554,19 @@ void Game::CreatePlayers() noexcept {
 
   p2FeetsCol.Restitution = 1.f;
   player_red_feet_col_ref_ = p2FeetsColRef;
+}
+
+void Game::ResetPositions() noexcept {
+  auto& ball = world_.GetBody(ball_body_ref_);
+  ball.Position = {metrics::kWindowWidth * 0.5f, metrics::kWindowHeight * 0.5f};
+  ball.Velocity = Math::Vec2F::Zero();
+
+  auto& p1 = world_.GetBody(player_blue_body_ref_);
+  p1.Position = {metrics::kWindowWidth * 0.33f, metrics::kWindowHeight * 0.66f};
+  p1.Velocity = Math::Vec2F::Zero();
+
+  auto& p2 = world_.GetBody(player_red_body_ref_);
+  p2.Position = {metrics::kWindowWidth - metrics::kWindowWidth * 0.33f,
+                 metrics::kWindowHeight * 0.66f};
+  p2.Velocity = Math::Vec2F::Zero();
 }

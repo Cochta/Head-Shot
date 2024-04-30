@@ -55,6 +55,7 @@ class Renderer {
   void SetupPlayers();
 
   void DrawMenu();
+  void DrawScore();
 
   void DrawTimer();
 

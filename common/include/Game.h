@@ -1,17 +1,16 @@
 #pragma once
 #include "Input.h"
 #include "Metrics.h"
-#include "Timer.h"
 #include "World.h"
 
 class Rollback;
 
 enum class BallType {
   kFootball = 0,
-  kVolleyball,
   kBasketball,
-  kTennisball,
   kBaseball,
+  kVolleyball,
+  kTennisball,
   kCount
 };
 
@@ -28,8 +27,6 @@ class Game : public ContactListener {
 
   GameState state_ = GameState::kMenu;
 
-  std::array<std::pair<int, input::Input>, 10> last_frame_input_;
-
   input::Input input_{};
   input::Input other_player_input_{};
 
@@ -42,7 +39,6 @@ class Game : public ContactListener {
 
   ColliderRef player_blue_feet_col_ref_;
 
-  Timer player_blue_shoot_timer_;
   float player_blue_shoot_time_ = 1.f;
 
   bool can_player_blue_shoot_ = false;
@@ -51,7 +47,6 @@ class Game : public ContactListener {
 
   ColliderRef player_red_feet_col_ref_;
 
-  Timer player_red_shoot_timer_;
   float player_red_shoot_time_ = 1.f;
 
   bool can_player_red_shoot_ = false;
@@ -60,6 +55,12 @@ class Game : public ContactListener {
   BodyRef ball_body_ref_{};
   ColliderRef ball_col_ref_{};
   float ball_radius_ = metrics::kBallRadiusMedium;
+
+  int blue_score_ = 0;
+  int red_score_ = 0;
+
+  ColliderRef left_goal_col_ref_{};
+  ColliderRef right_goal_col_ref_{};
 
   BodyRef player_blue_body_ref_{};
   BodyRef player_red_body_ref_{};
@@ -97,11 +98,16 @@ class Game : public ContactListener {
   Math::Vec2F GetBallVelocity() noexcept;
   BallType GetBallType() noexcept;
 
+  int GetBlueScore() noexcept { return blue_score_; }
+  int GetRedScore() noexcept { return red_score_; }
+
   Math::Vec2F GetPlayerBluePos() noexcept;
   Math::Vec2F GetPlayerRedPos() noexcept;
 
   void SetPlayerInput(input::Input input) noexcept;
   void SetOtherPlayerInput(input::Input input) noexcept;
+
+  void SetBallType(BallType type) noexcept { ball_type_ = type; }
 
   void EndGame();
 
@@ -114,6 +120,8 @@ class Game : public ContactListener {
   void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override{};
 
   int CheckSum() noexcept;
+
+  void ResetPositions() noexcept;
 
  private:
   void CreateBall() noexcept;

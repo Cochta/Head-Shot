@@ -38,6 +38,7 @@ void Application::Run() {
           rollback_.IncreaseCurrentFrame();
           if (rollback_.GetCurentFrame() >= 5400) {
             game_.EndGame();
+            network_.leaveRoomEventAction(game_.player_nbr, false);
             break;
           }
 

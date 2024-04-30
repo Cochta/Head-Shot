@@ -83,6 +83,8 @@ void Network::joinRoomEventAction(
     game_->player_nbr = playerNr - 1;
   }
   if (playerNr == 2) {
+    game_->SetBallType(BallType::kBasketball);
+    
     game_->StartGame();
     rollback_->RegisterGame(game_);
     renderer_->StartGame();

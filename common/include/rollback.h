@@ -9,6 +9,7 @@ class Rollback {
  public:
   void RegisterGame(Game* game) noexcept {
     current_ = game;
+    confirmed_.SetBallType(game->GetBallType());
     confirmed_.StartGame();
     confirmed_.player_nbr = current_->player_nbr;
   }
