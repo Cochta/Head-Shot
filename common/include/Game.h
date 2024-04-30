@@ -30,8 +30,6 @@ class Game : public ContactListener {
 
   std::array<std::pair<int, input::Input>, 10> last_frame_input_;
 
-  int game_frame_ = -1;
-
   input::Input input_{};
   input::Input other_player_input_{};
 
@@ -82,7 +80,7 @@ class Game : public ContactListener {
   int player_nbr = -1;
   Game(Rollback* rollback);
 
-  void Copy(const Game &other);
+  void Copy(const Game& other);
 
   void ProcessInput() noexcept;
 
@@ -98,13 +96,14 @@ class Game : public ContactListener {
   Math::Vec2F GetBallPosition() noexcept;
   Math::Vec2F GetBallVelocity() noexcept;
   BallType GetBallType() noexcept;
-  int GetGameFrame() noexcept { return game_frame_; };
 
   Math::Vec2F GetPlayerBluePos() noexcept;
   Math::Vec2F GetPlayerRedPos() noexcept;
 
   void SetPlayerInput(input::Input input) noexcept;
   void SetOtherPlayerInput(input::Input input) noexcept;
+
+  void EndGame();
 
   void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 

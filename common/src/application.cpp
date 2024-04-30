@@ -36,29 +36,33 @@ void Application::Run() {
         time += game_timer_.DeltaTime;
         while (time >= metrics::kFixedDeltaTime) {
           rollback_.IncreaseCurrentFrame();
+          if (rollback_.GetCurentFrame() >= 5400) {
+            game_.EndGame();
+            break;
+          }
 
           HandlePacket();
 
-          input::Input input = 0;
+          input::Input actualInput = 0;
 
           if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
-            input |= input::kRight;
+            actualInput |= input::kRight;
           }
           if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
-            input |= input::kLeft;
+            actualInput |= input::kLeft;
           }
           if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) {
-            input |= input::kJump;
+            actualInput |= input::kJump;
           }
           if (IsKeyDown(KEY_SPACE)) {
-            input |= input::kKick;
+            actualInput |= input::kKick;
           }
 
-          const input::FrameInput frame_input{input,
+          const input::FrameInput frame_input{actualInput,
                                               rollback_.GetCurentFrame()};
           rollback_.SetPlayerInput(frame_input, game_.player_nbr);
 
-          inputs_.push_back(input);
+          inputs_.push_back(actualInput);
           frames_.push_back(rollback_.GetCurentFrame());
 
           ExitGames::Common::Hashtable event_data;
@@ -155,7 +159,7 @@ void Application::HandlePacket() {
         if (game_.player_nbr == 0) {
           inputs_.erase(inputs_.begin());
           frames_.erase(frames_.begin());
-          return;
+          break;
         }
 
         int checksum = 0;

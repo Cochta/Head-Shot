@@ -9,7 +9,8 @@ class Rollback {
  public:
   void RegisterGame(Game* game) noexcept {
     current_ = game;
-    confirmed_ = *game;
+    confirmed_.StartGame();
+    confirmed_.player_nbr = current_->player_nbr;
   }
 
   void SetPlayerInput(const input::FrameInput &frame_input, int player_id);

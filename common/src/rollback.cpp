@@ -81,7 +81,7 @@ void Rollback::DoRollback() const noexcept {
   ZoneScoped;
 #endif
 
-  *current_ = confirmed_;
+  current_->Copy(confirmed_);
 
   for (short frame = static_cast<short>(confirmed_frame_ + 1);
        frame < current_frame_; frame++) {

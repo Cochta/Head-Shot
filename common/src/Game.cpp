@@ -93,11 +93,7 @@ void Game::Update() noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
-  game_frame_++;
   FixedUpdate();
-  if (game_frame_ >= 5400) {
-    state_ = GameState::kGameFinished;
-  }
 }
 
 void Game::FixedUpdate() {
@@ -209,6 +205,7 @@ GameState Game::GetState() { return state_; }
 
 void Game::Copy(const Game& other) {
   world_ = other.world_;
+  world_.SetContactListener(this);
   input_ = other.input_;
   other_player_input_ = other.other_player_input_;
 
@@ -218,6 +215,9 @@ void Game::Copy(const Game& other) {
   can_player_red_shoot_ = other.can_player_red_shoot_;
   is_player_blue_grounded_ = other.is_player_blue_grounded_;
   is_player_red_grounded_ = other.is_player_red_grounded_;
+
+  player_blue_shoot_timer_ = other.player_blue_shoot_timer_;
+  player_red_shoot_timer_ = other.player_red_shoot_timer_;
 }
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
@@ -244,6 +244,8 @@ void Game::SetPlayerInput(input::Input input) noexcept { input_ = input; }
 void Game::SetOtherPlayerInput(input::Input input) noexcept {
   other_player_input_ = input;
 }
+
+void Game::EndGame() { state_ = GameState::kGameFinished; }
 
 void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
