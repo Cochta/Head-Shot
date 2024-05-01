@@ -36,7 +36,7 @@ void Application::Run() {
         time += game_timer_.DeltaTime;
         while (time >= metrics::kFixedDeltaTime) {
           rollback_.IncreaseCurrentFrame();
-          if (rollback_.GetCurentFrame() >= metrics::kGameFrameNbr) {
+          if (rollback_.GetCurentFrame() >= 500) {
             game_.EndGame();
             network_.leaveRoomEventAction(game_.player_nbr, false);
             break;

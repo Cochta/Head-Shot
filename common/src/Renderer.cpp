@@ -53,11 +53,13 @@ void Renderer::Draw(void) {
         break;
 
       case GameState::kInGame:
-      case GameState::kGameFinished:
         DrawBall();
         DrawScore();
         DrawPlayers();
         DrawTimer();
+        break;
+      case GameState::kGameFinished:
+        DrawEndGame();
         break;
     }
   }
@@ -165,6 +167,52 @@ void Renderer::DrawScore() {
                               100) *
               0.5f,
       metrics::kWindowHeight * 0.33f, 100, raylib::RED);
+}
+
+void Renderer::DrawEndGame() {
+  DrawBall();
+  DrawScore();
+  DrawPlayers();
+
+  int blueScore = game_->GetBlueScore();
+  int redScore = game_->GetRedScore();
+
+  const char* text = "";
+  auto color = raylib::BLACK;
+
+  int textSize = kFontSize * 2;
+
+  if (blueScore == redScore) {
+    text = "Draw !";
+  } else if (blueScore > redScore) {
+    text = "Blue wins";
+    color = raylib::BLUE;
+  } else {
+    text = "Red wins";
+    color = raylib::RED;
+  }
+
+  raylib::DrawRaylibText(
+      text,
+      metrics::kWindowWidth * 0.5f - raylib::MeasureText(text, textSize) * 0.5f,
+      30, textSize, color);
+
+  text = "Main menu";
+  start_btn_text_color_ = raylib::WHITE;
+
+  if (CheckCollisionPointRec(raylib::GetMousePosition(), start_btn_rect)) {
+    start_btn_text_color_ = raylib::YELLOW;
+    if (raylib::IsMouseButtonPressed(0)) {
+      game_->Restart();
+    }
+  }
+
+  DrawRectangleRec(start_btn_rect, start_btn_text_color_);
+
+  raylib::DrawRaylibText(text,
+                         metrics::kWindowWidth * 0.5f -
+                             raylib::MeasureText(text, kFontSize) * 0.5f,
+                         metrics::kWindowHeight * 0.2f + 30, 30, raylib::BLACK);
 }
 
 void Renderer::DrawTimer() {

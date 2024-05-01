@@ -6,10 +6,6 @@
 #include <Tracy.hpp>
 #endif
 
-#include "rollback.h"
-
-Game::Game(Rollback* rollback) : rollback_(rollback) {}
-
 void Game::ProcessInput() noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
@@ -94,7 +90,7 @@ void Game::Update() noexcept {
   FixedUpdate();
 }
 
-void Game::FixedUpdate() {
+void Game::FixedUpdate() noexcept{
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
@@ -234,6 +230,8 @@ void Game::SetOtherPlayerInput(input::Input input) noexcept {
 }
 
 void Game::EndGame() { state_ = GameState::kGameFinished; }
+
+void Game::Restart() { state_ = GameState::kMenu; }
 
 void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||

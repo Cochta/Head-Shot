@@ -21,7 +21,7 @@ class Application {
 
  private:
   Rollback rollback_;
-  Game game_{&rollback_};
+  Game game_{};
 
   Audio audio_{};
   Renderer renderer_{};

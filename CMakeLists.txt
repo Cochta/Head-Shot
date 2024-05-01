@@ -96,10 +96,20 @@ if (USE_TRACY)
 endif()
 
 if (BUILD_WEB)
-        # The local resources path needs to be mapped to /data virtual path
-        string(APPEND data_dir "@data")
-        set_target_properties(main PROPERTIES LINK_FLAGS "--preload-file ${data_dir}")
+    # The local resources path needs to be mapped to /data virtual path
+    string(APPEND data_dir "@data")
+    set_target_properties(main PROPERTIES LINK_FLAGS "--preload-file ${data_dir}")
 endif ()
 
 # Copy all of the resource files to the destination
-file(COPY ${data_files} DESTINATION "data/")
+if(BUILD_RELEASE)
+    if(IS_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Release/data/")
+        file(COPY ${data_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Release/data/")
+    endif()
+else()
+    if(IS_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Debug/data/")
+        file(COPY ${data_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/Debug/data/")
+    endif()
+endif()
+
+

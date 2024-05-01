@@ -57,6 +57,8 @@ class Renderer {
   void DrawMenu();
   void DrawScore();
 
+    void DrawEndGame();
+
   void DrawTimer();
 
   void DrawBall();

@@ -43,7 +43,7 @@ class Rollback {
 
  private:
   Game* current_ = nullptr;
-  Game confirmed_{this};
+  Game confirmed_{};
 
   short current_frame_ = -1;
   short last_remote_input_frame_ = -1;

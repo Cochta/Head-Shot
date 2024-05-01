@@ -23,8 +23,6 @@ class Game : public ContactListener {
  private:
   World world_;
 
-  Rollback* rollback_;
-
   GameState state_ = GameState::kMenu;
 
   input::Input input_{};
@@ -37,7 +35,7 @@ class Game : public ContactListener {
 
   ColliderRef player_blue_col_ref_{};
 
-  ColliderRef player_blue_feet_col_ref_;
+  ColliderRef player_blue_feet_col_ref_{};
 
   float player_blue_shoot_time_ = 1.f;
 
@@ -45,7 +43,7 @@ class Game : public ContactListener {
 
   ColliderRef player_red_col_ref_{};
 
-  ColliderRef player_red_feet_col_ref_;
+  ColliderRef player_red_feet_col_ref_{};
 
   float player_red_shoot_time_ = 1.f;
 
@@ -79,13 +77,12 @@ class Game : public ContactListener {
 
  public:
   int player_nbr = -1;
-  Game(Rollback* rollback);
 
   void Copy(const Game& other);
 
   void Setup() noexcept;
   void Update() noexcept;
-  void FixedUpdate();
+  void FixedUpdate() noexcept;
   void TearDown() noexcept;
 
   void StartGame();
@@ -108,6 +105,7 @@ class Game : public ContactListener {
   void SetBallType(BallType type) noexcept { ball_type_ = type; }
 
   void EndGame();
+  void Restart();
 
   void OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 
