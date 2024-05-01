@@ -49,9 +49,8 @@ class Rollback {
   short last_remote_input_frame_ = -1;
   short frame_to_confirm_ = 0;
   short confirmed_frame_ = -1;
-  static constexpr short kMaxFrameCount = 5400;  // 1:30 min at 60 hertz
 
   std::array<input::Input, 2> last_inputs_;
 
-  std::array<std::array<input::Input, kMaxFrameCount>, 2> inputs_{};
+  std::array<std::array<input::Input, metrics::kGameFrameNbr>, 2> inputs_{};
 };

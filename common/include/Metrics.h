@@ -30,4 +30,6 @@ constexpr float kPlayerRadius = MetersToPixels(0.5f);
 
 constexpr float kFixedDeltaTime = 1.f / kFPS;
 
+constexpr int kGameFrameNbr = 5400; // 1:30 min at 60 hertz
+
 }  // namespace metrics

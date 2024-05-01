@@ -83,8 +83,6 @@ class Game : public ContactListener {
 
   void Copy(const Game& other);
 
-  void ProcessInput() noexcept;
-
   void Setup() noexcept;
   void Update() noexcept;
   void FixedUpdate();
@@ -117,13 +115,14 @@ class Game : public ContactListener {
 
   void OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 
-  void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override{};
+  void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override{}
 
   int CheckSum() noexcept;
 
+ private:
+  void ProcessInput() noexcept;
   void ResetPositions() noexcept;
 
- private:
   void CreateBall() noexcept;
   void CreateTerrain() noexcept;
   void CreatePlayers() noexcept;
