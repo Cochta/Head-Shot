@@ -9,7 +9,7 @@ void Application::Setup() {
   SetConfigFlags(FLAG_VSYNC_HINT);
   InitWindow(metrics::kWindowWidth, metrics::kWindowHeight, "Head Shot");
   renderer_.Setup(&game_, &network_);
-  // audio_.Setup();
+  audio_.Setup();
 
   network_.Connect();
 }
@@ -19,8 +19,10 @@ void Application::Run() {
   emscripten_set_main_loop_arg(UpdateDrawFrame, &renderer, 0, 1);
 
 #else
+  float time = metrics::kFixedDeltaTime;
 
   while (!WindowShouldClose()) {
+    audio_.Update();
     network_.Service();
     switch (game_.GetState()) {
       case GameState::kMenu:
@@ -32,13 +34,12 @@ void Application::Run() {
         game_timer_.Tick();
         game_time_ += game_timer_.DeltaTime;
 
-        static float time = metrics::kFixedDeltaTime;
         time += game_timer_.DeltaTime;
         while (time >= metrics::kFixedDeltaTime) {
           rollback_.IncreaseCurrentFrame();
-          if (rollback_.GetCurentFrame() >= 500) {
+          if (rollback_.GetCurentFrame() >= metrics::kGameFrameNbr) {
             game_.EndGame();
-            network_.leaveRoomEventAction(game_.player_nbr, false);
+            network_.LeaveRoom();
             break;
           }
 
@@ -91,6 +92,12 @@ void Application::Run() {
         renderer_.SetGameTime(game_time_);
       } break;
       case GameState::kGameFinished:
+        time = metrics::kFixedDeltaTime;
+        rollback_.Reset();
+        while (!packet_queue.empty()) {
+          packet_queue.pop();
+        }
+        game_time_ = 0;
         // network leave room
         break;
     }

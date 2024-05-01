@@ -39,6 +39,8 @@ class Renderer {
   Image2D player_red_left_feet_{};
   Image2D player_red_right_feet_{};
 
+  bool isWaitingOtherPlayer = false;
+
  public:
   void StartGame();
 
@@ -57,7 +59,7 @@ class Renderer {
   void DrawMenu();
   void DrawScore();
 
-    void DrawEndGame();
+  void DrawEndGame();
 
   void DrawTimer();
 

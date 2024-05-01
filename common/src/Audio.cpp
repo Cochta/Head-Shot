@@ -2,12 +2,17 @@
 
 void Audio::Setup() {
   InitAudioDevice();
-  music = LoadSound("data/music.wav");
-  SetSoundVolume(music, 0.2);
-  PlaySound(music);
+  music = LoadMusicStream("data/music.wav");
+  music.looping = true;
+  SetMusicVolume(music, 0.2f);
+
+  PlayMusicStream(music);
 }
 
+void Audio::Update()
+{ UpdateMusicStream(music); }
+
 void Audio::TearDown() {
-  UnloadSound(music);
+  UnloadMusicStream(music);
   CloseAudioDevice();
 }

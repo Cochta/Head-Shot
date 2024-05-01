@@ -90,7 +90,7 @@ void Game::Update() noexcept {
   FixedUpdate();
 }
 
-void Game::FixedUpdate() noexcept{
+void Game::FixedUpdate() noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
@@ -231,7 +231,16 @@ void Game::SetOtherPlayerInput(input::Input input) noexcept {
 
 void Game::EndGame() { state_ = GameState::kGameFinished; }
 
-void Game::Restart() { state_ = GameState::kMenu; }
+void Game::Restart() {
+  state_ = GameState::kMenu;
+
+  input_ = 0;
+  other_player_input_ = 0;
+
+  blue_score_ = 0;
+  red_score_ = 0;
+  TearDown();
+}
 
 void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||

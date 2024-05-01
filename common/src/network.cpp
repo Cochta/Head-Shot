@@ -28,6 +28,8 @@ void Network::JoinRandomOrCreateRoom() noexcept {
           L"Could not join or create room.");
 }
 
+void Network::LeaveRoom() noexcept { load_balancing_client_.opLeaveRoom(); }
+
 void Network::Disconnect() {
   load_balancing_client_
       .disconnect();  // Disconnect() is asynchronous - the actual result
@@ -84,7 +86,7 @@ void Network::joinRoomEventAction(
   }
   if (playerNr == 2) {
     game_->SetBallType(BallType::kBasketball);
-    
+
     game_->StartGame();
     rollback_->RegisterGame(game_);
     renderer_->StartGame();

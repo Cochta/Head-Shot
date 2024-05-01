@@ -3,9 +3,9 @@
 #include <Common-cpp/inc/Logger.h>
 #include <LoadBalancing-cpp/inc/Client.h>
 
-#include "rollback.h"
 #include "Renderer.h"
 #include "packet.h"
+#include "rollback.h"
 
 class Application;
 
@@ -19,9 +19,12 @@ class Network final : public ExitGames::LoadBalancing::Listener {
   void Disconnect();
   void Service();
 
-  bool IsConnected() const noexcept { return is_connected_; };
+  bool IsConnected() const noexcept { return is_connected_; }
 
   void JoinRandomOrCreateRoom() noexcept;
+
+  void LeaveRoom() noexcept;
+
   void RaiseEvent(bool reliable, PacketType type,
                   const ExitGames::Common::Hashtable& event_data) noexcept;
   void ReceiveEvent(int player_nr, PacketType type,

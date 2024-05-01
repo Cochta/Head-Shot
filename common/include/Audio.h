@@ -6,9 +6,11 @@ using namespace raylib;
 
 class Audio {
  public:
-  Sound music;
+  Music music;
 
   void Setup();
+
+	void Update();
 
   void TearDown();
 };

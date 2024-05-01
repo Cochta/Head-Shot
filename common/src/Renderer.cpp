@@ -123,8 +123,6 @@ void Renderer::SetupPlayers() {
 }
 
 void Renderer::DrawMenu() {
-  static bool isWaitingOtherPlayer = false;
-
   const char* text = "Start Game";
   start_btn_text_color_ = raylib::WHITE;
   if (!network_->IsConnected()) {
@@ -204,6 +202,7 @@ void Renderer::DrawEndGame() {
     start_btn_text_color_ = raylib::YELLOW;
     if (raylib::IsMouseButtonPressed(0)) {
       game_->Restart();
+      isWaitingOtherPlayer = false;
     }
   }
 
