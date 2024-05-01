@@ -203,6 +203,9 @@ void Game::Copy(const Game& other) {
   can_player_red_shoot_ = other.can_player_red_shoot_;
   is_player_blue_grounded_ = other.is_player_blue_grounded_;
   is_player_red_grounded_ = other.is_player_red_grounded_;
+
+  blue_score_ = other.blue_score_;
+  red_score_ = other.red_score_;
 }
 
 float Game::GetBallRadius() const noexcept { return ball_radius_; }
