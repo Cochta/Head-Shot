@@ -21,10 +21,10 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_blue_grounded_ = false;
     }
-    if ((input_ & input::kKick) && can_player_blue_shoot_ &&
-        player_blue_shoot_time_ >= 1.0f) {
+    if ((input_ & input::kKick) && can_player_blue_kick_ &&
+        player_blue_kick_time_ >= 1.0f) {
       world_.GetBody(ball_body_ref_).ApplyForce({kShootForce, -kShootForce});
-      player_blue_shoot_time_ = 0.f;
+      player_blue_kick_time_ = 0.f;
     }
     if (other_player_input_ & input::kRight) {
       world_.GetBody(player_red_body_ref_).ApplyForce({kWalkSpeed, 0});
@@ -36,10 +36,10 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_red_grounded_ = false;
     }
-    if ((other_player_input_ & input::kKick) && can_player_red_shoot_ &&
-        player_red_shoot_time_ >= 1.0f) {
+    if ((other_player_input_ & input::kKick) && can_player_red_kick_ &&
+        player_red_kick_time_ >= 1.0f) {
       world_.GetBody(ball_body_ref_).ApplyForce({-kShootForce, -kShootForce});
-      player_red_shoot_time_ = 0.f;
+      player_red_kick_time_ = 0.f;
     }
   } else {
     if (input_ & input::kRight) {
@@ -52,10 +52,10 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_red_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_red_grounded_ = false;
     }
-    if ((input_ & input::kKick) && can_player_red_shoot_ &&
-        player_red_shoot_time_ >= 1.0f) {
+    if ((input_ & input::kKick) && can_player_red_kick_ &&
+        player_red_kick_time_ >= 1.0f) {
       world_.GetBody(ball_body_ref_).ApplyForce({-kShootForce, -kShootForce});
-      player_red_shoot_time_ = 0.f;
+      player_red_kick_time_ = 0.f;
     }
     if (other_player_input_ & input::kRight) {
       world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
@@ -67,10 +67,10 @@ void Game::ProcessInput() noexcept {
       world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_blue_grounded_ = false;
     }
-    if ((other_player_input_ & input::kKick) && can_player_blue_shoot_ &&
-        player_blue_shoot_time_ >= 1.0f) {
+    if ((other_player_input_ & input::kKick) && can_player_blue_kick_ &&
+        player_blue_kick_time_ >= 1.0f) {
       world_.GetBody(ball_body_ref_).ApplyForce({kShootForce, -kShootForce});
-      player_blue_shoot_time_ = 0.f;
+      player_blue_kick_time_ = 0.f;
     }
   }
 }
@@ -100,8 +100,8 @@ void Game::FixedUpdate() noexcept {
       break;
     case GameState::kInGame:
       world_.Update(metrics::kFixedDeltaTime);
-      player_blue_shoot_time_ += metrics::kFixedDeltaTime;
-      player_red_shoot_time_ += metrics::kFixedDeltaTime;
+      player_blue_kick_time_ += metrics::kFixedDeltaTime;
+      player_red_kick_time_ += metrics::kFixedDeltaTime;
 
       ProcessInput();
 
@@ -175,6 +175,7 @@ void Game::FixedUpdate() noexcept {
 }
 
 void Game::TearDown() noexcept {
+  player_nbr = -1;
   body_refs_.clear();
   col_refs_.clear();
   world_.TearDown();
@@ -193,10 +194,10 @@ void Game::Copy(const Game& other) {
   input_ = other.input_;
   other_player_input_ = other.other_player_input_;
 
-  player_blue_shoot_time_ = other.player_blue_shoot_time_;
-  can_player_blue_shoot_ = other.can_player_blue_shoot_;
-  player_red_shoot_time_ = other.player_red_shoot_time_;
-  can_player_red_shoot_ = other.can_player_red_shoot_;
+  player_blue_kick_time_ = other.player_blue_kick_time_;
+  can_player_blue_kick_ = other.can_player_blue_kick_;
+  player_red_kick_time_ = other.player_red_kick_time_;
+  can_player_red_kick_ = other.can_player_red_kick_;
   is_player_blue_grounded_ = other.is_player_blue_grounded_;
   is_player_red_grounded_ = other.is_player_red_grounded_;
 
@@ -245,11 +246,11 @@ void Game::Restart() {
 void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
-    can_player_blue_shoot_ = true;
+    can_player_blue_kick_ = true;
   }
   if ((col1 == player_red_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_red_feet_col_ref_ && col1 == ball_col_ref_)) {
-    can_player_red_shoot_ = true;
+    can_player_red_kick_ = true;
   }
   if ((col1 == left_goal_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == left_goal_col_ref_ && col1 == ball_col_ref_)) {
@@ -266,11 +267,11 @@ void Game::OnTriggerEnter(ColliderRef col1, ColliderRef col2) noexcept {
 void Game::OnTriggerExit(ColliderRef col1, ColliderRef col2) noexcept {
   if ((col1 == player_blue_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_blue_feet_col_ref_ && col1 == ball_col_ref_)) {
-    can_player_blue_shoot_ = false;
+    can_player_blue_kick_ = false;
   }
   if ((col1 == player_red_feet_col_ref_ && col2 == ball_col_ref_) ||
       (col2 == player_red_feet_col_ref_ && col1 == ball_col_ref_)) {
-    can_player_red_shoot_ = false;
+    can_player_red_kick_ = false;
   }
 }
 

@@ -9,9 +9,7 @@ void Audio::Setup() {
   PlayMusicStream(music);
 }
 
-void Audio::Update()
-{ UpdateMusicStream(music); }
-
+void Audio::Update() { UpdateMusicStream(music); }
 void Audio::TearDown() {
   UnloadMusicStream(music);
   CloseAudioDevice();

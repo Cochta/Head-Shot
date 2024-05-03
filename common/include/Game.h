@@ -33,37 +33,54 @@ class Game : public ContactListener {
 
   ColliderRef ground_col_ref_{};
 
+  // Represents a reference to the blue player's body in the physics engine.
+  BodyRef player_blue_body_ref_{};
+
+  // Represents a reference to the blue player's main collision shape.
   ColliderRef player_blue_col_ref_{};
 
+  // Represents a reference to the blue player's feet collision shape,
+  // used for kicking the ball.
   ColliderRef player_blue_feet_col_ref_{};
 
-  float player_blue_shoot_time_ = 1.f;
+  // Indicates whether the blue player is currently on the ground.
+  bool is_player_blue_grounded_ = false;
 
-  bool can_player_blue_shoot_ = false;
+  // A timer tracking the time elapsed since the blue player last kicked the
+  // ball, initially set to 1 second so the player can kick from the start.
+  float player_blue_kick_time_ = 1.f;
+
+  // A flag indicating whether the blue player can currently kick the ball
+  bool can_player_blue_kick_ = false;
+
+  // Keeps track of the blue player's score in the game; initially set to zero.
+  int blue_score_ = 0;
 
   ColliderRef player_red_col_ref_{};
 
   ColliderRef player_red_feet_col_ref_{};
 
-  float player_red_shoot_time_ = 1.f;
+  float player_red_kick_time_ = 1.f;
 
-  bool can_player_red_shoot_ = false;
+  bool can_player_red_kick_ = false;
 
+  // represents the type of the ball, it changes it's bouciness and mass so the
+  // game is less repetitive, not fully implemented yet
   BallType ball_type_ = BallType::kFootball;
+
+  // Represents a reference to the ball's body in the physics engine.
   BodyRef ball_body_ref_{};
+
+  // Represents a reference to the ball's main collision shape.
   ColliderRef ball_col_ref_{};
   float ball_radius_ = metrics::kBallRadiusMedium;
 
-  int blue_score_ = 0;
   int red_score_ = 0;
 
   ColliderRef left_goal_col_ref_{};
   ColliderRef right_goal_col_ref_{};
-
-  BodyRef player_blue_body_ref_{};
   BodyRef player_red_body_ref_{};
 
-  bool is_player_blue_grounded_ = false;
   bool is_player_red_grounded_ = false;
 
   static constexpr float kBallGravity = 1000;
@@ -113,7 +130,7 @@ class Game : public ContactListener {
 
   void OnCollisionEnter(ColliderRef col1, ColliderRef col2) noexcept override;
 
-  void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override{}
+  void OnCollisionExit(ColliderRef col1, ColliderRef col2) noexcept override {}
 
   int CheckSum() noexcept;
 
