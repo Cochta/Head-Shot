@@ -15,4 +15,4 @@ SPACE - Kick
 
 To play the game: https://github.com/Cochta/Head-Shot/releases
 
-The blog post about it's development: Cochta.github.io/rollback.html
+The blog post about it's development: https://cochta.github.io/rollback.html
