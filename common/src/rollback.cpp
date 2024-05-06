@@ -1,5 +1,11 @@
 #include "rollback.h"
 
+#ifdef TRACY_ENABLE
+#include <TracyC.h>
+
+#include <Tracy.hpp>
+#endif
+
 void Rollback::SetPlayerInput(const input::FrameInput& local_input,
                               int player_id) {
   inputs_[player_id][local_input.frame_nbr] = local_input.input;
@@ -80,13 +86,18 @@ void Rollback::DoRollback() const noexcept {
 #ifdef TRACY_ENABLE
   ZoneScoped;
 #endif
-
+  // Copy the confirmed game state to the current state
   current_->Copy(confirmed_);
 
+  // Loop through the frames from the first frame after the confirmed frame to
+  // the current frame
   for (short frame = static_cast<short>(confirmed_frame_ + 1);
        frame < current_frame_; frame++) {
+    // Loop through each player
     for (int player_id = 0; player_id < 2; player_id++) {
+      // Retrieve the input for the player at the current frame
       const auto input = inputs_[player_id][frame];
+      // Apply the player's input to the game state based on their player ID
       if (current_->player_nbr == player_id) {
         current_->SetPlayerInput(input);
       } else {
@@ -94,16 +105,21 @@ void Rollback::DoRollback() const noexcept {
       }
     }
 
+    // Perform a fixed update on the current game state
     current_->FixedUpdate();
   }
-
-  // The Fixed update of the current frame is made in the main loop after
-  // polling received events from network.
 }
 
 int Rollback::ConfirmFrame() noexcept {
+#ifdef TRACY_ENABLE
+  ZoneScoped;
+#endif
+  // Loop through each player 
   for (int player_id = 0; player_id < 2; player_id++) {
+    // Retrieve the input for the player at the frame to be confirmed
     const auto input = inputs_[player_id][frame_to_confirm_];
+    // Apply the player's input to the confirmed game state based on their
+    // player ID
     if (confirmed_.player_nbr == player_id) {
       confirmed_.SetPlayerInput(input);
     } else {
@@ -111,11 +127,17 @@ int Rollback::ConfirmFrame() noexcept {
     }
   }
 
+  // Perform a fixed update on the confirmed game state
   confirmed_.FixedUpdate();
+
+  // Calculate the checksum of the confirmed game state
   const auto checksum = confirmed_.CheckSum();
 
+  // Increment the confirmed frame counter and the frame to confirm
   confirmed_frame_++;
   frame_to_confirm_++;
+
+  // Return the calculated checksum
   return checksum;
 }
 

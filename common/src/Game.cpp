@@ -11,18 +11,22 @@ void Game::ProcessInput() noexcept {
   ZoneScoped;
 #endif
   if (player_nbr == 0) {
-    if (input_ & input::kRight) {
+    if (input_ & input::kRight)  // player moves right
+    {
       world_.GetBody(player_blue_body_ref_).ApplyForce({kWalkSpeed, 0});
     }
-    if (input_ & input::kLeft) {
+    if (input_ & input::kLeft)  // player moves left
+    {
       world_.GetBody(player_blue_body_ref_).ApplyForce({-kWalkSpeed, 0});
     }
-    if ((input_ & input::kJump) && is_player_blue_grounded_) {
+    if ((input_ & input::kJump) && is_player_blue_grounded_)  // player jumps
+    {
       world_.GetBody(player_blue_body_ref_).ApplyForce({0, kJumpSpeed});
       is_player_blue_grounded_ = false;
     }
     if ((input_ & input::kKick) && can_player_blue_kick_ &&
-        player_blue_kick_time_ >= 1.0f) {
+        player_blue_kick_time_ >= 1.0f)  // player kicks the ball
+    {
       world_.GetBody(ball_body_ref_).ApplyForce({kShootForce, -kShootForce});
       player_blue_kick_time_ = 0.f;
     }
@@ -191,13 +195,16 @@ GameState Game::GetState() { return state_; }
 void Game::Copy(const Game& other) {
   world_ = other.world_;
   world_.SetContactListener(this);
+
   input_ = other.input_;
   other_player_input_ = other.other_player_input_;
 
   player_blue_kick_time_ = other.player_blue_kick_time_;
-  can_player_blue_kick_ = other.can_player_blue_kick_;
   player_red_kick_time_ = other.player_red_kick_time_;
+
+  can_player_blue_kick_ = other.can_player_blue_kick_;
   can_player_red_kick_ = other.can_player_red_kick_;
+
   is_player_blue_grounded_ = other.is_player_blue_grounded_;
   is_player_red_grounded_ = other.is_player_red_grounded_;
 

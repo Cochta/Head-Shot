@@ -73,6 +73,9 @@ class Game : public ContactListener {
 
   // Represents a reference to the ball's main collision shape.
   ColliderRef ball_col_ref_{};
+
+  // Represents the radius of ball, it changes depending on the BallType,
+  //  not fully implemented yet
   float ball_radius_ = metrics::kBallRadiusMedium;
 
   int red_score_ = 0;
